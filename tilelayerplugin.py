@@ -88,8 +88,9 @@ class TileLayerPlugin:
       if not accepted:
         return
       self.setCRS()
+      providerNameLabel = dialog.ui.checkBox_ProviderNameLabel.isChecked()
       for serviceInfo in dialog.selectedServiceInfoList():
-        layer = TileLayer(serviceInfo, self.iface)
+        layer = TileLayer(self.iface, serviceInfo, providerNameLabel)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
 

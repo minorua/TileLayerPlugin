@@ -185,10 +185,12 @@ class TileLayer(QgsPluginLayer):
   MAX_TILE_COUNT = 64
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
-  def __init__(self, layerDef, iface=None):
+  def __init__(self, iface, layerDef, providerNameLabel=True):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
-    self.layerDef = layerDef
     self.iface = iface
+    self.layerDef = layerDef
+    self.providerNameLabel = providerNameLabel
+
     crs = QgsCoordinateReferenceSystem("EPSG:3857")
     self.setCrs(crs)
     if layerDef.bbox:
@@ -288,6 +290,16 @@ class TileLayer(QgsPluginLayer):
       # draw tiles
       self.drawTiles(rendererContext, self.tiles)
       #self.drawTilesDirectly(rendererContext, self.tiles)
+
+      # draw provider name on the bottom right
+      if self.providerNameLabel and self.layerDef.providerName != "":
+        margin, paddingH, paddingV = (5, 4, 3)
+        canvasSize = painter.viewport().size()
+        rect = QRect(0, 0, canvasSize.width() - margin, canvasSize.height() - margin)
+        textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.providerName)
+        bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
+        painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
+        painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.providerName)
 
     if debug_mode:
       # draw plugin icon
@@ -407,6 +419,7 @@ class TileLayer(QgsPluginLayer):
   def readXml(self, node):
     element = node.toElement()
     self.layerDef.title = element.attribute("title", "")
+    self.layerDef.providerName = element.attribute("providerName", "")
     self.layerDef.serviceUrl = element.attribute("url", "")
     self.layerDef.yOriginTop = int(element.attribute("yOriginTop", "1"))
     self.layerDef.zmin = int(element.attribute("zmin", str(DefaultSettings.ZMIN)))
@@ -418,6 +431,7 @@ class TileLayer(QgsPluginLayer):
     # layer style
     self.transparency = int(element.attribute("transparency", str(DefaultSettings.TRANSPARENCY)))
     self.blendingModeName = element.attribute("blend", DefaultSettings.BLENDING_MODE)
+    self.providerNameLabel = bool(int(element.attribute("providerNameLabel", "1")))
     return True
 
   def writeXml(self, node, doc):
@@ -425,6 +439,7 @@ class TileLayer(QgsPluginLayer):
     element.setAttribute("type", "plugin")
     element.setAttribute("name", TileLayer.LAYER_TYPE);
     element.setAttribute("title", self.layerDef.title)
+    element.setAttribute("providerName", self.layerDef.providerName)
     element.setAttribute("url", self.layerDef.serviceUrl)
     element.setAttribute("yOriginTop", self.layerDef.yOriginTop)
     element.setAttribute("zmin", self.layerDef.zmin)
@@ -436,6 +451,8 @@ class TileLayer(QgsPluginLayer):
       element.setAttribute("transparency", self.transparency)
     if self.blendingModeName != DefaultSettings.BLENDING_MODE:
       element.setAttribute("blend", self.blendingModeName)
+    if self.providerNameLabel != True:
+      element.setAttribute("providerNameLabel", 0)
     return True
 
   def metadata(self):
@@ -465,7 +482,7 @@ class TileLayerType(QgsPluginLayerType):
     self.iface = iface
 
   def createLayer(self):
-    return TileLayer(TileServiceInfo.createEmptyInfo(), self.iface)
+    return TileLayer(self.iface, TileServiceInfo.createEmptyInfo())
 
   def showLayerProperties(self, layer):
     from propertiesdialog import PropertiesDialog
@@ -475,5 +492,6 @@ class TileLayerType(QgsPluginLayerType):
     if accepted:
       layer.setTransparency(dialog.ui.spinBox_Transparency.value())
       layer.setBlendingMode(dialog.ui.comboBox_BlendingMode.currentText())
+      layer.providerNameLabel = dialog.ui.checkBox_providerNameLabel.isChecked()
       layer.emit(SIGNAL("repaintRequested()"))
     return True

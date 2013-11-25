@@ -41,6 +41,7 @@ class PropertiesDialog(QDialog):
     i = self.ui.comboBox_BlendingMode.findText(layer.blendingModeName)
     if i != -1:
       self.ui.comboBox_BlendingMode.setCurrentIndex(i)
+    self.ui.checkBox_providerNameLabel.setChecked(layer.providerNameLabel)
 
   def initBlendingCombo(self):
     attrs = dir(QPainter)
