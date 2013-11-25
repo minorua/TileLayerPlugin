@@ -64,7 +64,8 @@ class TileLayerPlugin:
         # Add toolbar button and menu item
         self.iface.insertAddLayerAction(self.action)
         self.iface.layerToolBar().addAction(self.action)
-        self.iface.addToolBarIcon(self.action)
+        if debug_mode:
+          self.iface.addToolBarIcon(self.action)
         #self.iface.newLayerMenu().addAction(self.action)
         #self.iface.addPluginToMenu(u"&TileLayer Plugin", self.action)
 
@@ -75,7 +76,8 @@ class TileLayerPlugin:
         # Remove the plugin menu item and icon
         self.iface.removeAddLayerAction(self.action)
         self.iface.layerToolBar().removeAction(self.action)
-        self.iface.removeToolBarIcon(self.action)
+        if debug_mode:
+          self.iface.removeToolBarIcon(self.action)
         #self.iface.removePluginMenu(u"&TileLayer Plugin", self.action)
 
         # Unregister plugin layer type
@@ -88,9 +90,9 @@ class TileLayerPlugin:
       if not accepted:
         return
       self.setCRS()
-      providerNameLabel = dialog.ui.checkBox_ProviderNameLabel.isChecked()
+      providerNameLabelVisibility = dialog.ui.checkBox_ProviderNameLabelVisibility.isChecked()
       for serviceInfo in dialog.selectedServiceInfoList():
-        layer = TileLayer(self.iface, serviceInfo, providerNameLabel)
+        layer = TileLayer(self.iface, serviceInfo, providerNameLabelVisibility)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
 

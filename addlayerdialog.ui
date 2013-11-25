@@ -64,7 +64,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox_ProviderNameLabel">
+      <widget class="QCheckBox" name="checkBox_ProviderNameLabelVisibility">
        <property name="enabled">
         <bool>true</bool>
        </property>

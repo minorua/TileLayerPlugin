@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\propertiesdialog.ui'
 #
-# Created: Mon Nov 25 17:38:35 2013
+# Created: Tue Nov 26 08:29:40 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -61,9 +61,9 @@ class Ui_Dialog(object):
         self.comboBox_BlendingMode.setObjectName(_fromUtf8("comboBox_BlendingMode"))
         self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.comboBox_BlendingMode)
         self.verticalLayout.addLayout(self.formLayout)
-        self.checkBox_providerNameLabel = QtGui.QCheckBox(self.groupBox_Style)
-        self.checkBox_providerNameLabel.setObjectName(_fromUtf8("checkBox_providerNameLabel"))
-        self.verticalLayout.addWidget(self.checkBox_providerNameLabel)
+        self.checkBox_ProviderNameLabelVisibility = QtGui.QCheckBox(self.groupBox_Style)
+        self.checkBox_ProviderNameLabelVisibility.setObjectName(_fromUtf8("checkBox_ProviderNameLabelVisibility"))
+        self.verticalLayout.addWidget(self.checkBox_ProviderNameLabelVisibility)
         self.gridLayout_2.addWidget(self.groupBox_Style, 2, 0, 1, 1)
         self.groupBox_Properties = QtGui.QGroupBox(Dialog)
         self.groupBox_Properties.setObjectName(_fromUtf8("groupBox_Properties"))
@@ -87,6 +87,6 @@ class Ui_Dialog(object):
         self.groupBox_Style.setTitle(QtGui.QApplication.translate("Dialog", "Style", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Transparency", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Blending mode", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_providerNameLabel.setText(QtGui.QApplication.translate("Dialog", "Draw provider name on the bottom right", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Draw provider name on the bottom right", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_Properties.setTitle(QtGui.QApplication.translate("Dialog", "Properties", None, QtGui.QApplication.UnicodeUTF8))
 

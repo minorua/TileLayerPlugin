@@ -185,11 +185,11 @@ class TileLayer(QgsPluginLayer):
   MAX_TILE_COUNT = 64
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
-  def __init__(self, iface, layerDef, providerNameLabel=1):
+  def __init__(self, iface, layerDef, providerNameLabelVisibility=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.iface = iface
     self.layerDef = layerDef
-    self.providerNameLabel = 1 if providerNameLabel else 0
+    self.providerNameLabelVisibility = 1 if providerNameLabelVisibility else 0
 
     # set custom properties
     self.setCustomProperty("title", layerDef.title)
@@ -200,7 +200,7 @@ class TileLayer(QgsPluginLayer):
     self.setCustomProperty("zmax", layerDef.zmax)
     if layerDef.bbox:
       self.setCustomProperty("bbox", layerDef.bbox.toString())
-    self.setCustomProperty("providerNameLabel", self.providerNameLabel)
+    self.setCustomProperty("providerNameLabelVisibility", self.providerNameLabelVisibility)
 
     crs = QgsCoordinateReferenceSystem("EPSG:3857")
     self.setCrs(crs)
@@ -224,9 +224,9 @@ class TileLayer(QgsPluginLayer):
     self.transparency = transparency
     self.setCustomProperty("transparency", transparency)
 
-  def setProviderNameLabel(self, providerNameLabel):
-    self.providerNameLabel = providerNameLabel
-    self.setCustomProperty("providerNameLabel", 1 if providerNameLabel else 0)
+  def setProviderNameLabelVisibility(self, visible):
+    self.providerNameLabelVisibility = visible
+    self.setCustomProperty("providerNameLabelVisibility", 1 if visible else 0)
 
   def draw(self, rendererContext):
     if rendererContext.extent().isEmpty():
@@ -309,7 +309,7 @@ class TileLayer(QgsPluginLayer):
       #self.drawTilesDirectly(rendererContext, self.tiles)
 
       # draw provider name on the bottom right
-      if self.providerNameLabel and self.layerDef.providerName != "":
+      if self.providerNameLabelVisibility and self.layerDef.providerName != "":
         margin, paddingH, paddingV = (5, 4, 3)
         canvasSize = painter.viewport().size()
         rect = QRect(0, 0, canvasSize.width() - margin, canvasSize.height() - margin)
@@ -448,7 +448,7 @@ class TileLayer(QgsPluginLayer):
     # layer style
     self.transparency = int(self.customProperty("transparency", DefaultSettings.TRANSPARENCY))
     self.blendingModeName = self.customProperty("blendMode", DefaultSettings.BLENDING_MODE)
-    self.providerNameLabel = int(self.customProperty("providerNameLabel", 1))
+    self.providerNameLabelVisibility = int(self.customProperty("providerNameLabelVisibility", 1))
     return True
 
   def writeXml(self, node, doc):
@@ -494,6 +494,6 @@ class TileLayerType(QgsPluginLayerType):
     if accepted:
       layer.setTransparency(dialog.ui.spinBox_Transparency.value())
       layer.setBlendingMode(dialog.ui.comboBox_BlendingMode.currentText())
-      layer.setProviderNameLabel(dialog.ui.checkBox_providerNameLabel.isChecked())
+      layer.setProviderNameLabelVisibility(dialog.ui.checkBox_ProviderNameLabelVisibility.isChecked())
       layer.emit(SIGNAL("repaintRequested()"))
     return True
