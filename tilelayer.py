@@ -162,7 +162,7 @@ class TileServiceInfo:
 
   @classmethod
   def createEmptyInfo(cls):
-    return TileServiceInfo("", "")
+    return TileServiceInfo("", "", "")
 
 class TileLayer(QgsPluginLayer):
 
