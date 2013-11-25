@@ -185,11 +185,22 @@ class TileLayer(QgsPluginLayer):
   MAX_TILE_COUNT = 64
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
-  def __init__(self, iface, layerDef, providerNameLabel=True):
+  def __init__(self, iface, layerDef, providerNameLabel=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.iface = iface
     self.layerDef = layerDef
-    self.providerNameLabel = providerNameLabel
+    self.providerNameLabel = 1 if providerNameLabel else 0
+
+    # set custom properties
+    self.setCustomProperty("title", layerDef.title)
+    self.setCustomProperty("providerName", layerDef.providerName)
+    self.setCustomProperty("serviceUrl", layerDef.serviceUrl)
+    self.setCustomProperty("yOriginTop", layerDef.yOriginTop)
+    self.setCustomProperty("zmin", layerDef.zmin)
+    self.setCustomProperty("zmax", layerDef.zmax)
+    if layerDef.bbox:
+      self.setCustomProperty("bbox", layerDef.bbox.toString())
+    self.setCustomProperty("providerNameLabel", self.providerNameLabel)
 
     crs = QgsCoordinateReferenceSystem("EPSG:3857")
     self.setCrs(crs)
@@ -207,9 +218,15 @@ class TileLayer(QgsPluginLayer):
   def setBlendingMode(self, modeName):
     self.blendingModeName = modeName
     self.blendingMode = getattr(QPainter, "CompositionMode_" + modeName, 0)
+    self.setCustomProperty("blendMode", modeName)
 
   def setTransparency(self, transparency):
     self.transparency = transparency
+    self.setCustomProperty("transparency", transparency)
+
+  def setProviderNameLabel(self, providerNameLabel):
+    self.providerNameLabel = providerNameLabel
+    self.setCustomProperty("providerNameLabel", 1 if providerNameLabel else 0)
 
   def draw(self, rendererContext):
     if rendererContext.extent().isEmpty():
@@ -417,42 +434,27 @@ class TileLayer(QgsPluginLayer):
     return False
 
   def readXml(self, node):
-    element = node.toElement()
-    self.layerDef.title = element.attribute("title", "")
-    self.layerDef.providerName = element.attribute("providerName", "")
-    self.layerDef.serviceUrl = element.attribute("url", "")
-    self.layerDef.yOriginTop = int(element.attribute("yOriginTop", "1"))
-    self.layerDef.zmin = int(element.attribute("zmin", str(DefaultSettings.ZMIN)))
-    self.layerDef.zmax = int(element.attribute("zmax", str(DefaultSettings.ZMAX)))
-    bbox = element.attribute("bbox", None)
+    self.readCustomProperties(node)
+    self.layerDef.title = self.customProperty("title", "")
+    self.layerDef.providerName = self.customProperty("providerName", "")
+    self.layerDef.serviceUrl = self.customProperty("serviceUrl", "")
+    self.layerDef.yOriginTop = int(self.customProperty("yOriginTop", 1))
+    self.layerDef.zmin = int(self.customProperty("zmin", DefaultSettings.ZMIN))
+    self.layerDef.zmax = int(self.customProperty("zmax", DefaultSettings.ZMAX))
+    bbox = self.customProperty("bbox", None)
     if bbox:
       self.layerDef.bbox = BoundingBox.fromString(bbox)
       self.setExtent(BoundingBox.degreesToMercatorMeters(self.layerDef.bbox).toQgsRectangle())
     # layer style
-    self.transparency = int(element.attribute("transparency", str(DefaultSettings.TRANSPARENCY)))
-    self.blendingModeName = element.attribute("blend", DefaultSettings.BLENDING_MODE)
-    self.providerNameLabel = bool(int(element.attribute("providerNameLabel", "1")))
+    self.transparency = int(self.customProperty("transparency", DefaultSettings.TRANSPARENCY))
+    self.blendingModeName = self.customProperty("blendMode", DefaultSettings.BLENDING_MODE)
+    self.providerNameLabel = int(self.customProperty("providerNameLabel", 1))
     return True
 
   def writeXml(self, node, doc):
     element = node.toElement();
     element.setAttribute("type", "plugin")
     element.setAttribute("name", TileLayer.LAYER_TYPE);
-    element.setAttribute("title", self.layerDef.title)
-    element.setAttribute("providerName", self.layerDef.providerName)
-    element.setAttribute("url", self.layerDef.serviceUrl)
-    element.setAttribute("yOriginTop", self.layerDef.yOriginTop)
-    element.setAttribute("zmin", self.layerDef.zmin)
-    element.setAttribute("zmax", self.layerDef.zmax)
-    if self.layerDef.bbox:
-      element.setAttribute("bbox", self.layerDef.bbox.toString())
-    # layer style
-    if self.transparency != DefaultSettings.TRANSPARENCY:
-      element.setAttribute("transparency", self.transparency)
-    if self.blendingModeName != DefaultSettings.BLENDING_MODE:
-      element.setAttribute("blend", self.blendingModeName)
-    if self.providerNameLabel != True:
-      element.setAttribute("providerNameLabel", 0)
     return True
 
   def metadata(self):
@@ -492,6 +494,6 @@ class TileLayerType(QgsPluginLayerType):
     if accepted:
       layer.setTransparency(dialog.ui.spinBox_Transparency.value())
       layer.setBlendingMode(dialog.ui.comboBox_BlendingMode.currentText())
-      layer.providerNameLabel = dialog.ui.checkBox_providerNameLabel.isChecked()
+      layer.setProviderNameLabel(dialog.ui.checkBox_providerNameLabel.isChecked())
       layer.emit(SIGNAL("repaintRequested()"))
     return True
