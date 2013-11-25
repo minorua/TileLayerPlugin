@@ -290,7 +290,7 @@ class TileLayer(QgsPluginLayer):
 
     if debug_mode:
       # draw plugin icon
-      image = QImage(os.path.join(os.path.dirname(QFile.decodeName(__file__)), "icon.png"))
+      image = QImage(os.path.join(os.path.dirname(QFile.decodeName(__file__)), "icon_old.png"))
       painter.drawImage(5, 5, image)
     # restore painter state
     painter.restore()
