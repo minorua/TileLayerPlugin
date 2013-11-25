@@ -77,16 +77,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox_NaviMessages">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Navigation messages</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <spacer name="horizontalSpacer_2">

@@ -185,9 +185,10 @@ class TileLayer(QgsPluginLayer):
   MAX_TILE_COUNT = 64
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
-  def __init__(self, iface, layerDef, providerNameLabelVisibility=1):
+  def __init__(self, plugin, layerDef, providerNameLabelVisibility=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
-    self.iface = iface
+    self.plugin = plugin
+    self.iface = plugin.iface
     self.layerDef = layerDef
     self.providerNameLabelVisibility = 1 if providerNameLabelVisibility else 0
 
@@ -235,7 +236,9 @@ class TileLayer(QgsPluginLayer):
 
     painter = rendererContext.painter()
     if not self.isCurrentCrsSupported(rendererContext):
-      painter.drawText(5, 10, "TileLayer is available only in EPSG:3857 or EPSG:900913")
+      if self.plugin.navigationMessagesEnabled:
+        msg = "TileLayer is available only in EPSG:3857 or EPSG:900913"
+        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
     # calculate zoom level
@@ -244,8 +247,9 @@ class TileLayer(QgsPluginLayer):
     zoom = min(zoom, self.layerDef.zmax)
     #zoom = max(self.layerDef.zmin, min(zoom, self.layerDef.zmax))
     if zoom < self.layerDef.zmin:
-      msg = QCoreApplication.translate("TileLayer", "{0}: Current zoom level ({1}) is smaller than zmin ({2}).").format(self.layerDef.title, zoom, self.layerDef.zmin)   #TODO: English
-      self.iface.messageBar().pushMessage(self.__class__.__name__, msg, QgsMessageBar.INFO, 3)
+      if self.plugin.navigationMessagesEnabled:
+        msg = QCoreApplication.translate("TileLayer", "{0}: Current zoom level ({1}) is smaller than zmin ({2}).").format(self.layerDef.title, zoom, self.layerDef.zmin)   #TODO: English
+        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
     # calculate tile range (yOrigin is top)
@@ -282,7 +286,7 @@ class TileLayer(QgsPluginLayer):
 
       if len(urls) > self.MAX_TILE_COUNT:
         msg = "Tile count is over limit (%d, max=%d)" % (len(urls), self.MAX_TILE_COUNT)
-        self.iface.messageBar().pushMessage(self.__class__.__name__, msg, QgsMessageBar.WARNING, 5)
+        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
         return True
 
       # download tile data
@@ -297,7 +301,7 @@ class TileLayer(QgsPluginLayer):
           msg += " %d files failed." % (self.downloader.fetchErrors)
           if self.downloader.fetchSuccesses == 0:
             msg = u"Failed to download all %d files. Check the layer extent - %s" % (self.downloader.fetchErrors, self.name())
-            self.iface.messageBar().pushMessage(self.__class__.__name__, msg, QgsMessageBar.WARNING, 5)
+            self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
         self.iface.mainWindow().statusBar().showMessage(msg, 5000)
 
       # save painter state and apply layer style
@@ -479,12 +483,12 @@ class TileLayer(QgsPluginLayer):
     pass
 
 class TileLayerType(QgsPluginLayerType):
-  def __init__(self, iface):
+  def __init__(self, plugin):
     QgsPluginLayerType.__init__(self, TileLayer.LAYER_TYPE)
-    self.iface = iface
+    self.plugin = plugin
 
   def createLayer(self):
-    return TileLayer(self.iface, TileServiceInfo.createEmptyInfo())
+    return TileLayer(self.plugin, TileServiceInfo.createEmptyInfo())
 
   def showLayerProperties(self, layer):
     from propertiesdialog import PropertiesDialog

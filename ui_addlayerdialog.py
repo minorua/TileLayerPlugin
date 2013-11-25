@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\addlayerdialog.ui'
 #
-# Created: Tue Nov 26 08:29:45 2013
+# Created: Tue Nov 26 08:54:17 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,10 +52,6 @@ class Ui_Dialog(object):
         self.checkBox_ProviderNameLabelVisibility.setChecked(True)
         self.checkBox_ProviderNameLabelVisibility.setObjectName(_fromUtf8("checkBox_ProviderNameLabelVisibility"))
         self.verticalLayout.addWidget(self.checkBox_ProviderNameLabelVisibility)
-        self.checkBox_NaviMessages = QtGui.QCheckBox(Dialog)
-        self.checkBox_NaviMessages.setEnabled(False)
-        self.checkBox_NaviMessages.setObjectName(_fromUtf8("checkBox_NaviMessages"))
-        self.verticalLayout.addWidget(self.checkBox_NaviMessages)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -78,7 +74,6 @@ class Ui_Dialog(object):
         self.label.setText(QtGui.QApplication.translate("Dialog", "External layers directory:", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_externalDirectory.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Provider name label on the bottom right", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_NaviMessages.setText(QtGui.QApplication.translate("Dialog", "Navigation messages", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Add.setText(QtGui.QApplication.translate("Dialog", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Close.setText(QtGui.QApplication.translate("Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8))
 

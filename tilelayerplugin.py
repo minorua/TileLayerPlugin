@@ -50,8 +50,8 @@ class TileLayerPlugin:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        # Create the dialog (after translation) and keep reference
-        #self.dlg = TileLayerPluginDialog()
+        self.pluginName = "TileLayerPlugin"
+        self.navigationMessagesEnabled = True
 
     def initGui(self):
         # Create action that will start plugin configuration
@@ -70,7 +70,7 @@ class TileLayerPlugin:
         #self.iface.addPluginToMenu(u"&TileLayer Plugin", self.action)
 
         # Register plugin layer type
-        QgsPluginLayerRegistry.instance().addPluginLayerType(TileLayerType(self.iface))
+        QgsPluginLayerRegistry.instance().addPluginLayerType(TileLayerType(self))
 
     def unload(self):
         # Remove the plugin menu item and icon
@@ -92,7 +92,7 @@ class TileLayerPlugin:
       self.setCRS()
       providerNameLabelVisibility = dialog.ui.checkBox_ProviderNameLabelVisibility.isChecked()
       for serviceInfo in dialog.selectedServiceInfoList():
-        layer = TileLayer(self.iface, serviceInfo, providerNameLabelVisibility)
+        layer = TileLayer(self, serviceInfo, providerNameLabelVisibility)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
 
