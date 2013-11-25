@@ -30,7 +30,7 @@ from addlayerdialog import AddLayerDialog
 import os.path
 from tilelayer import *
 
-debug_mode = 0
+debug_mode = 1
 
 class TileLayerPlugin:
 

@@ -25,7 +25,7 @@ from qgis.core import *
 import os
 import datetime
 
-debug_mode = 0
+debug_mode = 1
 
 class Downloader(QObject):
 
@@ -51,9 +51,10 @@ class Downloader(QObject):
     reply = self.sender()
     url = reply.url().toString()
     self.log("replyFinished: %s" % url)
-    self.requestingUrls.remove(url)
     if self.async and not url in self.fetchedFiles:
       self.fetchedFiles[url] = None
+    self.requestingUrls.remove(url)
+    self.replies.remove(reply)
 
     if reply.error() == QNetworkReply.NoError:
       httpStatusCode = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
@@ -73,7 +74,6 @@ class Downloader(QObject):
     else:
       self.fetchErrors += 1
 
-    self.replies.remove(reply)
     reply.deleteLater()
 
     if self.async and len(self.queue) + len(self.requestingUrls) == 0:
@@ -88,13 +88,13 @@ class Downloader(QObject):
     if len(self.queue) == 0:
       return
     url = self.queue.pop(0)
-    self.requestingUrls.append(url)
     self.log("fetchNext: %s" % url)
 
     request = QNetworkRequest(QUrl(url))
 #    request.setRawHeader("User-Agent", "Mozilla/5.0")
     reply = QgsNetworkAccessManager.instance().get(request)
     reply.finished.connect(self.replyFinished)
+    self.requestingUrls.append(url)
     self.replies.append(reply)
     return reply
 

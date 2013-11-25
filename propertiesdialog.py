@@ -33,8 +33,8 @@ class PropertiesDialog(QDialog):
 
     self.layer = layer
     self.initBlendingCombo()
-    QObject.connect(self.ui.horizontalSlider_Transparency, SIGNAL("valueChanged(int)"), self.sliderChanged)
-    QObject.connect(self.ui.spinBox_Transparency, SIGNAL("valueChanged(int)"), self.spinBoxChanged)
+    self.ui.horizontalSlider_Transparency.valueChanged.connect(self.sliderChanged)
+    self.ui.spinBox_Transparency.valueChanged.connect(self.spinBoxChanged)
 
     self.ui.textEdit_Properties.setText(layer.metadata())
     self.ui.spinBox_Transparency.setValue(layer.transparency)
@@ -44,7 +44,6 @@ class PropertiesDialog(QDialog):
 
   def initBlendingCombo(self):
     attrs = dir(QPainter)
-    modes = []
     for attr in attrs:
       if attr.startswith("CompositionMode_"):
         self.ui.comboBox_BlendingMode.addItem(attr[16:])

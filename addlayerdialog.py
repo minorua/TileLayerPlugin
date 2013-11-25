@@ -32,9 +32,8 @@ class AddLayerDialog(QDialog):
     # set up the user interface
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)
-    self.resize(600, 400)
-    QObject.connect(self.ui.pushButton_Add, SIGNAL("clicked()"), self.accept)
-    QObject.connect(self.ui.pushButton_Close, SIGNAL("clicked()"), self.reject)
+    self.ui.pushButton_Add.clicked.connect(self.accept)
+    self.ui.pushButton_Close.clicked.connect(self.reject)
 
     # tree view header labels
     headers = ["Title","ProviderName","Url","Zoom","Extent","yOrigin"] + ["index"]
@@ -71,7 +70,6 @@ class AddLayerDialog(QDialog):
 
     # load service info from tsv file
     f = codecs.open(filename, "r", "utf-8")
-    serviceInfoList = []
     for line in f.readlines():
       vals = line.split("\t")
       nvals = len(vals)
@@ -94,7 +92,7 @@ class AddLayerDialog(QDialog):
             serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax, bbox)
 
       # append the service info into the tree
-      vals = serviceInfo.toArrayForTableView() + [len(self.serviceInfoList)]
+      vals = serviceInfo.toArrayForTreeView() + [len(self.serviceInfoList)]
       rowItems = map(QStandardItem, map(unicode, vals))
       parent.appendRow(rowItems)
       self.serviceInfoList.append(serviceInfo)

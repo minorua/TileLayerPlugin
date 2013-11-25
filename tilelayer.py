@@ -28,7 +28,7 @@ import os
 import math
 from downloader import Downloader
 
-debug_mode = 0
+debug_mode = 1
 
 R = 6378137
 
@@ -45,11 +45,11 @@ def degreesToMercatorMeters(lon, lat):
   y = R * math.log(math.tan(math.pi / 4 + (lat * math.pi / 180) / 2))
   return x, y
 
-def degreesToTile(zoom, lon, lat):
+def degreesToTile(zoom, lon, lat):    #TODO: move into TileServiceInfo
   x, y = degreesToMercatorMeters(lon, lat)
-  size = TileLayer.TSIZE1 / 2 ** (zoom - 1)
-  tx = int((x + TileLayer.TSIZE1) / size)
-  ty = int((TileLayer.TSIZE1 - y) / size)
+  size = TileServiceInfo.TSIZE1 / 2 ** (zoom - 1)
+  tx = int((x + TileServiceInfo.TSIZE1) / size)
+  ty = int((TileServiceInfo.TSIZE1 - y) / size)
   return tx, ty
 
 class Tile:
@@ -61,14 +61,15 @@ class Tile:
 
 class Tiles:
 
-  def __init__(self, zoom, xmin, ymin, xmax, ymax, tilesize, yOriginTop=1): #TODO: + layerDefinition
+  def __init__(self, zoom, xmin, ymin, xmax, ymax, serviceInfo):
     self.zoom = zoom
     self.xmin = xmin
     self.ymin = ymin
     self.xmax = xmax
     self.ymax = ymax
-    self.tilesize = tilesize
-    self.yOriginTop = yOriginTop
+    self.tilesize = serviceInfo.TILE_SIZE
+    self.yOriginTop = serviceInfo.yOriginTop
+    self.serviceInfo = serviceInfo
 
     self.tiles = {}
     self.cachedImage = None
@@ -104,9 +105,9 @@ class Tiles:
     return image
 
   def extent(self):
-    size = TileLayer.TSIZE1 / 2 ** (self.zoom - 1)
-    topLeft = QPointF(self.xmin * size - TileLayer.TSIZE1, TileLayer.TSIZE1 - self.ymin * size)
-    bottomRight = QPointF((self.xmax + 1) * size - TileLayer.TSIZE1, TileLayer.TSIZE1 - (self.ymax + 1) * size)
+    size = TileServiceInfo.TSIZE1 / 2 ** (self.zoom - 1)
+    topLeft = QPointF(self.xmin * size - TileServiceInfo.TSIZE1, TileServiceInfo.TSIZE1 - self.ymin * size)
+    bottomRight = QPointF((self.xmax + 1) * size - TileServiceInfo.TSIZE1, TileServiceInfo.TSIZE1 - (self.ymax + 1) * size)
     return QRectF(topLeft, bottomRight)
 
 class BoundingBox:
@@ -142,6 +143,10 @@ class BoundingBox:
     return BoundingBox(a[0], a[1], a[2], a[3])
 
 class TileServiceInfo:
+
+  TILE_SIZE = 256
+  TSIZE1 = 20037508.342789244
+
   def __init__(self, title, providerName, serviceUrl, yOriginTop=1, zmin=DefaultSettings.ZMIN, zmax=DefaultSettings.ZMAX, bbox=None):
     self.title = title
     self.providerName = providerName
@@ -151,10 +156,19 @@ class TileServiceInfo:
     self.zmax = zmax
     self.bbox = bbox
 
+  def tileUrl(self, zoom, x, y):
+    if not self.yOriginTop:
+      y = (2 ** zoom - 1) - y
+    return self.serviceUrl.replace("{z}", str(zoom)).replace("{x}", str(x)).replace("{y}", str(y))
+
+  def getMapRect(self, zoom, x, y):
+    size = self.TSIZE1 / 2 ** (zoom - 1)
+    return QgsRectangle(x * size - self.TSIZE1, self.TSIZE1 - y * size, (x + 1) * size - self.TSIZE1, self.TSIZE1 - (y + 1) * size)
+
   def __str__(self):
     return "%s (%s)" % (self.title, self.serviceUrl)
 
-  def toArrayForTableView(self):
+  def toArrayForTreeView(self):
     extent = ""
     if self.bbox:
       extent = self.bbox.toString(2)
@@ -167,8 +181,6 @@ class TileServiceInfo:
 class TileLayer(QgsPluginLayer):
 
   LAYER_TYPE = "TileLayer"
-  TILE_SIZE = 256       #TODO: move into TileServiceInfoi
-  TSIZE1 = 20037508.342789244     #TODO: move into TileServiceInfoi
   MAX_TILE_COUNT = 64
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
@@ -176,13 +188,12 @@ class TileLayer(QgsPluginLayer):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.layerDef = layerDef
     self.iface = iface
-    crs = QgsCoordinateReferenceSystem()
-    crs.createFromOgcWmsCrs("EPSG:3857")
+    crs = QgsCoordinateReferenceSystem("EPSG:3857")
     self.setCrs(crs)
     if layerDef.bbox:
       self.setExtent(BoundingBox.degreesToMercatorMeters(layerDef.bbox).toQgsRectangle())
     else:
-      self.setExtent(QgsRectangle(-TileLayer.TSIZE1, -TileLayer.TSIZE1, TileLayer.TSIZE1, TileLayer.TSIZE1))
+      self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
     self.downloader = Downloader(self)
@@ -208,7 +219,7 @@ class TileLayer(QgsPluginLayer):
       return True
 
     # calculate zoom level
-    mpp1 = TileLayer.TSIZE1 / self.TILE_SIZE
+    mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
     zoom = int(math.ceil(math.log(mpp1 / rendererContext.mapToPixel().mapUnitsPerPixel(), 2) + 1))
     zoom = min(zoom, self.layerDef.zmax)
     #zoom = max(self.layerDef.zmin, min(zoom, self.layerDef.zmax))
@@ -218,11 +229,11 @@ class TileLayer(QgsPluginLayer):
       return True
 
     # calculate tile range (yOrigin is top)
-    size = TileLayer.TSIZE1 / 2 ** (zoom - 1)
-    ulx = int((rendererContext.extent().xMinimum() + TileLayer.TSIZE1) / size)
-    uly = int((TileLayer.TSIZE1 - rendererContext.extent().yMaximum()) / size)
-    lrx = int((rendererContext.extent().xMaximum() + TileLayer.TSIZE1) / size)
-    lry = int((TileLayer.TSIZE1 - rendererContext.extent().yMinimum()) / size)
+    size = self.layerDef.TSIZE1 / 2 ** (zoom - 1)
+    ulx = int((rendererContext.extent().xMinimum() + self.layerDef.TSIZE1) / size)
+    uly = int((self.layerDef.TSIZE1 - rendererContext.extent().yMaximum()) / size)
+    lrx = int((rendererContext.extent().xMaximum() + self.layerDef.TSIZE1) / size)
+    lry = int((self.layerDef.TSIZE1 - rendererContext.extent().yMinimum()) / size)
 
     # bounding box limit
     if self.layerDef.bbox:
@@ -241,11 +252,11 @@ class TileLayer(QgsPluginLayer):
       self.drawDebugInfo(rendererContext, zoom, ulx, uly, lrx, lry)
     else:
       # create Tiles class object and throw url into it
-      self.tiles = Tiles(zoom, ulx, uly, lrx, lry, self.TILE_SIZE, self.layerDef.yOriginTop)
+      self.tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
       urls = []
       for ty in range(uly, lry + 1):
         for tx in range(ulx, lrx + 1):
-          url = self.tileUrl(zoom, tx, ty)
+          url = self.layerDef.tileUrl(zoom, tx, ty)
           self.tiles.addTile(url, Tile(zoom, tx, ty))
           urls.append(url)
 
@@ -375,11 +386,6 @@ class TileLayer(QgsPluginLayer):
     for i, line in enumerate(lines):
       p.drawText(10, i * 20 + 20, line)
 
-  def tileUrl(self, zoom, x, y):
-    if not self.layerDef.yOriginTop:
-      y = (2 ** zoom - 1) - y
-    return self.layerDef.serviceUrl.replace("{z}", str(zoom)).replace("{x}", str(x)).replace("{y}", str(y))
-
   def getPixelRect(self, rendererContext, zoom, x, y):
     r = self.getMapRect(zoom, x, y)
     map2pix = rendererContext.mapToPixel()
@@ -389,10 +395,6 @@ class TileLayer(QgsPluginLayer):
     #return QRectF(QPointF(round(topLeft.x()), round(topLeft.y())), QPointF(round(bottomRight.x()), round(bottomRight.y())))
     #return QgsRectangle(topLeft, bottomRight)
 
-  def getMapRect(self, zoom, x, y):
-    size = TileLayer.TSIZE1 / 2 ** (zoom - 1)
-    return QgsRectangle(x * size - TileLayer.TSIZE1, TileLayer.TSIZE1 - y * size, (x + 1) * size - TileLayer.TSIZE1, TileLayer.TSIZE1 - (y + 1) * size)
-
   def isCurrentCrsSupported(self, rendererContext):
     crs = rendererContext.coordinateTransform()
     if crs:
@@ -400,11 +402,6 @@ class TileLayer(QgsPluginLayer):
       if epsg == 3857 or epsg == 900913:
           return True
     return False
-
-  def downloadEvent(self, url):
-    if self.iface:
-      host = QUrl(url).host()
-      self.iface.messageBar().pushMessage("downloading", host + "..." + url.split("/")[-1], QgsMessageBar.INFO, 1)
 
   def readXml(self, node):
     element = node.toElement()
