@@ -38,7 +38,7 @@ class TileLayerPlugin:
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
+        self.plugin_dir = os.path.dirname(QFile.decodeName(__file__))
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
         localePath = os.path.join(self.plugin_dir, 'i18n', 'tilelayerplugin_{}.qm'.format(locale))
@@ -57,7 +57,7 @@ class TileLayerPlugin:
         # Create action that will start plugin configuration
         self.action = QAction(
             QIcon(":/plugins/tilelayerplugin/icon.png"),
-            u"Add Tile Layer...", self.iface.mainWindow())
+            QCoreApplication.translate("TileLayerPlugin", "Add Tile Layer..."), self.iface.mainWindow())
         # connect the action to the run method
         self.action.triggered.connect(self.run)
 

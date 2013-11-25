@@ -224,7 +224,7 @@ class TileLayer(QgsPluginLayer):
     zoom = min(zoom, self.layerDef.zmax)
     #zoom = max(self.layerDef.zmin, min(zoom, self.layerDef.zmax))
     if zoom < self.layerDef.zmin:
-      msg = u"{0}: Current zoom level ({1}) is smaller than zmin ({2}).".format(self.layerDef.title, zoom, self.layerDef.zmin)   #TODO: English
+      msg = QCoreApplication.translate("TileLayer", "{0}: Current zoom level ({1}) is smaller than zmin ({2}).").format(self.layerDef.title, zoom, self.layerDef.zmin)   #TODO: English
       self.iface.messageBar().pushMessage(self.__class__.__name__, msg, QgsMessageBar.INFO, 3)
       return True
 
