@@ -67,7 +67,8 @@ class Tiles:
     self.ymin = ymin
     self.xmax = xmax
     self.ymax = ymax
-    self.tilesize = serviceInfo.TILE_SIZE
+    self.TILE_SIZE = serviceInfo.TILE_SIZE
+    self.TSIZE1 = serviceInfo.TSIZE1
     self.yOriginTop = serviceInfo.yOriginTop
     self.serviceInfo = serviceInfo
 
@@ -86,8 +87,8 @@ class Tiles:
   def image(self):
     if self.cachedImage:
       return self.cachedImage
-    width = (self.xmax - self.xmin + 1) * self.tilesize
-    height = (self.ymax - self.ymin + 1) * self.tilesize
+    width = (self.xmax - self.xmin + 1) * self.TILE_SIZE
+    height = (self.ymax - self.ymin + 1) * self.TILE_SIZE
     image = QImage(width, height, QImage.Format_ARGB32_Premultiplied)
     p = QPainter(image)
     for tile in self.tiles.values():
@@ -96,7 +97,7 @@ class Tiles:
 
       x = tile.x - self.xmin
       y = tile.y - self.ymin
-      rect = QRect(x * self.tilesize, y * self.tilesize, self.tilesize, self.tilesize)
+      rect = QRect(x * self.TILE_SIZE, y * self.TILE_SIZE, self.TILE_SIZE, self.TILE_SIZE)
 
       timg = QImage()
       timg.loadFromData(tile.data)
@@ -105,9 +106,9 @@ class Tiles:
     return image
 
   def extent(self):
-    size = TileServiceInfo.TSIZE1 / 2 ** (self.zoom - 1)
-    topLeft = QPointF(self.xmin * size - TileServiceInfo.TSIZE1, TileServiceInfo.TSIZE1 - self.ymin * size)
-    bottomRight = QPointF((self.xmax + 1) * size - TileServiceInfo.TSIZE1, TileServiceInfo.TSIZE1 - (self.ymax + 1) * size)
+    size = self.TSIZE1 / 2 ** (self.zoom - 1)
+    topLeft = QPointF(self.xmin * size - self.TSIZE1, self.TSIZE1 - self.ymin * size)
+    bottomRight = QPointF((self.xmax + 1) * size - self.TSIZE1, self.TSIZE1 - (self.ymax + 1) * size)
     return QRectF(topLeft, bottomRight)
 
 class BoundingBox:
@@ -387,7 +388,7 @@ class TileLayer(QgsPluginLayer):
       p.drawText(10, i * 20 + 20, line)
 
   def getPixelRect(self, rendererContext, zoom, x, y):
-    r = self.getMapRect(zoom, x, y)
+    r = self.layerDef.getMapRect(zoom, x, y)
     map2pix = rendererContext.mapToPixel()
     topLeft = map2pix.transform(r.xMinimum(), r.yMaximum())
     bottomRight = map2pix.transform(r.xMaximum(), r.yMinimum())
