@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\addlayerdialog.ui'
 #
-# Created: Sun Nov 24 15:13:08 2013
+# Created: Mon Nov 25 16:27:58 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,22 +29,23 @@ class Ui_Dialog(object):
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.label = QtGui.QLabel(Dialog)
-        self.label.setEnabled(False)
+        self.label.setEnabled(True)
         self.label.setObjectName(_fromUtf8("label"))
         self.horizontalLayout.addWidget(self.label)
-        self.label_layerInfoDirectory = QtGui.QLabel(Dialog)
-        self.label_layerInfoDirectory.setEnabled(False)
+        self.label_externalDirectory = QtGui.QLabel(Dialog)
+        self.label_externalDirectory.setEnabled(True)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_layerInfoDirectory.sizePolicy().hasHeightForWidth())
-        self.label_layerInfoDirectory.setSizePolicy(sizePolicy)
-        self.label_layerInfoDirectory.setObjectName(_fromUtf8("label_layerInfoDirectory"))
-        self.horizontalLayout.addWidget(self.label_layerInfoDirectory)
-        self.toolButton = QtGui.QToolButton(Dialog)
-        self.toolButton.setEnabled(False)
-        self.toolButton.setObjectName(_fromUtf8("toolButton"))
-        self.horizontalLayout.addWidget(self.toolButton)
+        sizePolicy.setHeightForWidth(self.label_externalDirectory.sizePolicy().hasHeightForWidth())
+        self.label_externalDirectory.setSizePolicy(sizePolicy)
+        self.label_externalDirectory.setText(_fromUtf8(""))
+        self.label_externalDirectory.setObjectName(_fromUtf8("label_externalDirectory"))
+        self.horizontalLayout.addWidget(self.label_externalDirectory)
+        self.toolButton_externalDirectory = QtGui.QToolButton(Dialog)
+        self.toolButton_externalDirectory.setEnabled(True)
+        self.toolButton_externalDirectory.setObjectName(_fromUtf8("toolButton_externalDirectory"))
+        self.horizontalLayout.addWidget(self.toolButton_externalDirectory)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.checkBox = QtGui.QCheckBox(Dialog)
         self.checkBox.setEnabled(False)
@@ -73,9 +74,8 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Add tile layer", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "Additional layer info directory:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_layerInfoDirectory.setText(QtGui.QApplication.translate("Dialog", "Not implemented yet", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "External layers directory:", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_externalDirectory.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox.setText(QtGui.QApplication.translate("Dialog", "Provider name label on the bottom right", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_2.setText(QtGui.QApplication.translate("Dialog", "Navigation messages", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Add.setText(QtGui.QApplication.translate("Dialog", "Add", None, QtGui.QApplication.UnicodeUTF8))

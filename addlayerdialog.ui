@@ -28,17 +28,17 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
-          <string>Additional layer info directory:</string>
+          <string>External layers directory:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_layerInfoDirectory">
+        <widget class="QLabel" name="label_externalDirectory">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -47,14 +47,14 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Not implemented yet</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton">
+        <widget class="QToolButton" name="toolButton_externalDirectory">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>...</string>

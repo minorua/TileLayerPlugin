@@ -29,12 +29,20 @@ from tilelayer import TileServiceInfo, BoundingBox
 class AddLayerDialog(QDialog):
   def __init__(self):
     QDialog.__init__(self)
+    settings = QSettings()
+    self.extDir = settings.value("/TileLayerPlugin/extDir", "", type=unicode)
+
     # set up the user interface
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)
+    extDirText = self.extDir if self.extDir != "" else self.tr("Not set")
+    self.ui.label_externalDirectory.setText(extDirText)
     self.ui.pushButton_Add.clicked.connect(self.accept)
     self.ui.pushButton_Close.clicked.connect(self.reject)
+    self.ui.toolButton_externalDirectory.clicked.connect(self.selectExternalDirectory)
+    self.setupTreeView()
 
+  def setupTreeView(self):
     # tree view header labels
     headers = ["Title","ProviderName","Url","Zoom","Extent","yOrigin"] + ["index"]
     self.indexColumn = len(headers) - 1
@@ -46,6 +54,10 @@ class AddLayerDialog(QDialog):
     self.serviceInfoList = []
     pluginDir = os.path.dirname(QFile.decodeName(__file__))
     self.importFromDirectory(os.path.join(pluginDir, "layers"))
+
+    # import service info also from external layers directory
+    if self.extDir != "":
+      self.importFromDirectory(self.extDir)
 
     # model and style settings
     self.ui.treeView.setModel(self.model)
@@ -104,3 +116,14 @@ class AddLayerDialog(QDialog):
       if idx.column() == self.indexColumn and idx.data() is not None:
         list.append(self.serviceInfoList[int(idx.data())])
     return list
+
+  def selectExternalDirectory(self):
+    # show select directory dialog
+    d  = QFileDialog.getExistingDirectory(self, self.tr("Select external layers directory"), self.extDir)
+    if d == "":
+      return
+    self.extDir = d
+    settings = QSettings()
+    settings.setValue("/TileLayerPlugin/extDir", self.extDir)
+    self.ui.label_externalDirectory.setText(self.extDir)
+    self.setupTreeView()
