@@ -237,7 +237,7 @@ class TileLayer(QgsPluginLayer):
     painter = rendererContext.painter()
     if not self.isCurrentCrsSupported(rendererContext):
       if self.plugin.navigationMessagesEnabled:
-        msg = "TileLayer is available only in EPSG:3857 or EPSG:900913"
+        msg = self.tr("TileLayer is available in EPSG:3857 or EPSG:900913")
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
@@ -248,7 +248,7 @@ class TileLayer(QgsPluginLayer):
     #zoom = max(self.layerDef.zmin, min(zoom, self.layerDef.zmax))
     if zoom < self.layerDef.zmin:
       if self.plugin.navigationMessagesEnabled:
-        msg = QCoreApplication.translate("TileLayer", "{0}: Current zoom level ({1}) is smaller than zmin ({2}).").format(self.layerDef.title, zoom, self.layerDef.zmin)   #TODO: English
+        msg = self.tr("Current zoom level ({0}) is smaller than zmin ({1}): {2}").format(zoom, self.layerDef.zmin, self.layerDef.title)
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
@@ -285,7 +285,7 @@ class TileLayer(QgsPluginLayer):
           urls.append(url)
 
       if len(urls) > self.MAX_TILE_COUNT:
-        msg = "Tile count is over limit (%d, max=%d)" % (len(urls), self.MAX_TILE_COUNT)
+        msg = self.tr("Tile count is over limit ({0}, max={1})").format(len(urls), self.MAX_TILE_COUNT)
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
         return True
 
@@ -296,11 +296,11 @@ class TileLayer(QgsPluginLayer):
       if self.iface:
         cacheHits = self.downloader.cacheHits
         downloadedCount = self.downloader.fetchSuccesses - cacheHits
-        msg = "%d files downloaded. %d caches hit." % (downloadedCount, cacheHits)
+        msg = self.tr("{0} files downloaded. {1} caches hit.").format(downloadedCount, cacheHits)
         if self.downloader.fetchErrors:
-          msg += " %d files failed." % (self.downloader.fetchErrors)
+          msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
           if self.downloader.fetchSuccesses == 0:
-            msg = u"Failed to download all %d files. Check the layer extent - %s" % (self.downloader.fetchErrors, self.name())
+            msg = self.tr("Failed to download all {0} files. Check the layer extent - {1}").format(self.downloader.fetchErrors, self.name())
             self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
         self.iface.mainWindow().statusBar().showMessage(msg, 5000)
 
@@ -463,16 +463,17 @@ class TileLayer(QgsPluginLayer):
 
   def metadata(self):
     lines = []
-    lines.append(u"Title:\t%s" % self.layerDef.title)
-    lines.append(u"Provider name:\t%s" % self.layerDef.providerName)
-    lines.append(u"URL:\t%s" % self.layerDef.serviceUrl)
+    fmt = u"%s:\t%s"
+    lines.append(fmt % (self.tr("Title"), self.layerDef.title))
+    lines.append(fmt % (self.tr("Provider name"), self.layerDef.providerName))
+    lines.append(fmt % (self.tr("URL"), self.layerDef.serviceUrl))
+    lines.append(fmt % (self.tr("yOrigin"), u"%s (yOriginTop=%d)" % (("Bottom", "Top")[self.layerDef.yOriginTop], self.layerDef.yOriginTop)))
     if self.layerDef.bbox:
       extent = self.layerDef.bbox.toString()
     else:
-      extent = "Not set"
-    lines.append(u"yOrigin:\t%s (yOriginTop=%d)" % (("Bottom", "Top")[self.layerDef.yOriginTop], self.layerDef.yOriginTop))
-    lines.append(u"Zoom range:\t%d - %d" % (self.layerDef.zmin, self.layerDef.zmax))
-    lines.append(u"Layer Extent:\t%s" % extent)
+      extent = self.tr("Not set")
+    lines.append(fmt % (self.tr("Zoom range"), "%d - %d" % (self.layerDef.zmin, self.layerDef.zmax)))
+    lines.append(fmt % (self.tr("Layer Extent"), extent))
     return "\n".join(lines)
 
   def log(self, msg):

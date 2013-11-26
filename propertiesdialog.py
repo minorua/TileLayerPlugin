@@ -29,7 +29,7 @@ class PropertiesDialog(QDialog):
     # set up the user interface
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)
-    self.setWindowTitle(u"%s - %s" % (QApplication.translate("Dialog", "Layer Properties", None, QApplication.UnicodeUTF8), layer.name()))
+    self.setWindowTitle(u"%s - %s" % (self.tr("Layer Properties"), layer.name()))
 
     self.layer = layer
     self.initBlendingCombo()

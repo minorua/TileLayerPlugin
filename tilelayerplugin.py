@@ -50,7 +50,7 @@ class TileLayerPlugin:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        self.pluginName = "TileLayerPlugin"
+        self.pluginName = QCoreApplication.translate("TileLayerPlugin", "TileLayerPlugin")
         self.navigationMessagesEnabled = True
 
     def initGui(self):
