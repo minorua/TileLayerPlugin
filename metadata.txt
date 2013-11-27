@@ -12,7 +12,7 @@
 name=TileLayer Plugin
 qgisMinimumVersion=2.0
 description=Plugin layer for Tile Maps
-version=0.05
+version=0.06
 author=Minoru Akagi
 email=akaginch@gmail.com
 
