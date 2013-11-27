@@ -26,6 +26,8 @@ import os
 import codecs
 from tiles import BoundingBox, TileServiceInfo
 
+debug_mode = 1
+
 class AddLayerDialog(QDialog):
   def __init__(self):
     QDialog.__init__(self)
@@ -70,6 +72,8 @@ class AddLayerDialog(QDialog):
     #d.setSorting(QDir.Size | QDir.Reversed)
 
     for fileInfo in d.entryInfoList():
+      if debug_mode == 0 and fileInfo.fileName() == "debug.tsv":
+        continue
       self.importFromTsv(fileInfo.filePath())
 
   # Line Format is:
