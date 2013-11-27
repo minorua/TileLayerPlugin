@@ -120,12 +120,12 @@
     <message>
         <location filename="../tilelayer.py" line="299"/>
         <source>{0} files downloaded. {1} caches hit.</source>
-        <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
+        <translation>ダウンロード{0}ファイル. {1}キャッシュヒット.</translation>
     </message>
     <message>
         <location filename="../tilelayer.py" line="301"/>
         <source> {} files failed.</source>
-        <translation>{}ファイル失敗.</translation>
+        <translation> {}ファイル失敗.</translation>
     </message>
     <message>
         <location filename="../tilelayer.py" line="303"/>
