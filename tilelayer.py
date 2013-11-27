@@ -68,10 +68,11 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
-    self.downloader = Downloader(self)
-    #QObject.connect(self.downloader, SIGNAL("fileFetched(QString, QByteArray"), self.fileFetched)
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
     self.setBlendingMode(LayerDefaultSettings.BLENDING_MODE)
+
+    self.downloader = Downloader(self)
+    QObject.connect(self.downloader, SIGNAL("replyFinished(QString, int, int)"), self.networkReplyFinished)
 
   def setBlendingMode(self, modeName):
     self.blendingModeName = modeName
@@ -300,6 +301,16 @@ class TileLayer(QgsPluginLayer):
       if epsg == 3857 or epsg == 900913:
           return True
     return False
+
+  def networkReplyFinished(self, url, error, isFromCache):
+    if self.iface is None or isFromCache:
+      return
+    downloadedCount = self.downloader.fetchSuccesses - self.downloader.cacheHits
+    totalCount = self.downloader.finishedCount() + self.downloader.unfinishedCount()
+    msg = self.tr("{0} of {1} files downloaded.").format(downloadedCount, totalCount)
+    if self.downloader.fetchErrors:
+      msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
+    self.iface.mainWindow().statusBar().showMessage(msg)
 
   def readXml(self, node):
     self.readCustomProperties(node)

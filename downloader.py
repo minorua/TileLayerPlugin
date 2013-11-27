@@ -75,19 +75,18 @@ class Downloader(QObject):
       self.fetchedFiles[url] = None
     self.requestingUrls.remove(url)
     self.replies.remove(reply)
-
+    isFromCache = 0
     if reply.error() == QNetworkReply.NoError:
       httpStatusCode = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
       self.fetchSuccesses += 1
       if reply.attribute(QNetworkRequest.SourceIsFromCacheAttribute):
         self.cacheHits += 1
+        isFromCache = 1
 
       if reply.isReadable():
         data = reply.readAll()
         if self.async:
           self.fetchedFiles[url] = data
-        else:
-          self.emit(SIGNAL('fileFetched(QString, QByteArray)'), url, data)
       else:
         if httpStatusCode is not None:
           qDebug("http status code: %d" % httpStatusCode)
@@ -96,6 +95,7 @@ class Downloader(QObject):
       if self.errorStatus == self.NO_ERROR:
         self.errorStatus = self.UNKNOWN_ERROR
 
+    self.emit(SIGNAL('replyFinished(QString, int, int)'), url, reply.error(), isFromCache)
     reply.deleteLater()
 
     if self.async and len(self.queue) + len(self.requestingUrls) == 0:
@@ -149,6 +149,12 @@ class Downloader(QObject):
 
   def queueCount(self):
     return len(self.queue)
+
+  def finishedCount(self):
+    return len(self.fetchedFiles)
+
+  def unfinishedCount(self):
+    return len(self.queue) + len(self.requestingUrls)
 
   def log(self, msg):
     if debug_mode:
