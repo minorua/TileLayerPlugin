@@ -40,7 +40,8 @@ class TileLayerPlugin:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(QFile.decodeName(__file__))
         # initialize locale
-        locale = QSettings().value("locale/userLocale")[0:2]
+        settings = QSettings()
+        locale = settings.value("locale/userLocale")[0:2]
         localePath = os.path.join(self.plugin_dir, 'i18n', 'tilelayerplugin_{}.qm'.format(locale))
 
         if os.path.exists(localePath):
@@ -52,20 +53,26 @@ class TileLayerPlugin:
 
         self.pluginName = QCoreApplication.translate("TileLayerPlugin", "TileLayerPlugin")
         self.navigationMessagesEnabled = True
+        self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 10, type=int))
 
     def initGui(self):
         # Create action that will start plugin configuration
         self.action = QAction(
             QIcon(":/plugins/tilelayerplugin/icon.png"),
             QCoreApplication.translate("TileLayerPlugin", "Add Tile Layer..."), self.iface.mainWindow())
+        self.actionSettings = QAction(
+            QCoreApplication.translate("TileLayerPlugin", "Settings"), self.iface.mainWindow())
+
         # connect the action to the run method
         self.action.triggered.connect(self.run)
+        self.actionSettings.triggered.connect(self.settings)
 
         # Add toolbar button and menu item
         self.iface.insertAddLayerAction(self.action)
         self.iface.layerToolBar().addAction(self.action)
         if debug_mode:
           self.iface.addToolBarIcon(self.action)
+        self.iface.addPluginToMenu(self.pluginName, self.actionSettings)
         #self.iface.newLayerMenu().addAction(self.action)
         #self.iface.addPluginToMenu(u"&TileLayer Plugin", self.action)
 
@@ -78,7 +85,7 @@ class TileLayerPlugin:
         self.iface.layerToolBar().removeAction(self.action)
         if debug_mode:
           self.iface.removeToolBarIcon(self.action)
-        #self.iface.removePluginMenu(u"&TileLayer Plugin", self.action)
+        self.iface.removePluginMenu(self.pluginName, self.actionSettings)
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
@@ -95,6 +102,14 @@ class TileLayerPlugin:
         layer = TileLayer(self, serviceInfo, providerNameLabelVisibility)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+    def settings(self):
+      from settingsdialog import SettingsDialog
+      dialog = SettingsDialog()
+      dialog.show()
+      accepted = dialog.exec_()
+      if accepted:
+        self.downloadTimeout = dialog.ui.spinBox_downloadTimeout.value()
 
     def setCRS(self):
       # based on the code of openlayers plugin

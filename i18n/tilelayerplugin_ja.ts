@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="1.1" language="ja_JP">
+<!DOCTYPE TS>
+<TS version="2.0" language="ja_JP">
 <context>
     <name>AddLayerDialog</name>
     <message>
@@ -190,14 +191,19 @@
 <context>
     <name>TileLayerPlugin</name>
     <message>
-        <location filename="../tilelayerplugin.py" line="58"/>
+        <location filename="../tilelayerplugin.py" line="60"/>
         <source>Add Tile Layer...</source>
         <translation>タイルレイヤを追加する...</translation>
     </message>
     <message>
-        <location filename="../tilelayerplugin.py" line="53"/>
+        <location filename="../tilelayerplugin.py" line="54"/>
         <source>TileLayerPlugin</source>
         <translation>タイルレイヤプラグイン</translation>
+    </message>
+    <message>
+        <location filename="../tilelayerplugin.py" line="63"/>
+        <source>Settings</source>
+        <translation>設定</translation>
     </message>
 </context>
 </TS>
