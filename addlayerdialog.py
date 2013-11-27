@@ -50,14 +50,14 @@ class AddLayerDialog(QDialog):
     self.model = QStandardItemModel(0, len(headers))
     self.model.setHorizontalHeaderLabels(headers)
 
-    # import service info from files in the layers directory, and append it into the tree
     self.serviceInfoList = []
-    pluginDir = os.path.dirname(QFile.decodeName(__file__))
-    self.importFromDirectory(os.path.join(pluginDir, "layers"))
-
-    # import service info also from external layers directory
+    # import service info from external layers directory, and append it into the tree
     if self.extDir != "":
       self.importFromDirectory(self.extDir)
+
+    # import service info from TileLayerPlugin/layers directory, and append it into the tree
+    pluginDir = os.path.dirname(QFile.decodeName(__file__))
+    self.importFromDirectory(os.path.join(pluginDir, "layers"))
 
     # model and style settings
     self.ui.treeView.setModel(self.model)
