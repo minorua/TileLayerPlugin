@@ -24,7 +24,7 @@ from PyQt4.QtGui import *
 from ui_addlayerdialog import Ui_Dialog
 import os
 import codecs
-from tilelayer import TileServiceInfo, BoundingBox
+from tiles import BoundingBox, TileServiceInfo
 
 class AddLayerDialog(QDialog):
   def __init__(self):
@@ -83,6 +83,8 @@ class AddLayerDialog(QDialog):
     # load service info from tsv file
     f = codecs.open(filename, "r", "utf-8")
     for line in f.readlines():
+      if line.startswith("#"):
+        continue
       vals = line.split("\t")
       nvals = len(vals)
       if nvals < 3:

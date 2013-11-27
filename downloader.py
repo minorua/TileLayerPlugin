@@ -91,7 +91,7 @@ class Downloader(QObject):
     self.log("fetchNext: %s" % url)
 
     request = QNetworkRequest(QUrl(url))
-#    request.setRawHeader("User-Agent", "Mozilla/5.0")
+    #request.setRawHeader("User-Agent", "QGIS/2.x TileLayerPlugin/0.x")
     reply = QgsNetworkAccessManager.instance().get(request)
     reply.finished.connect(self.replyFinished)
     self.requestingUrls.append(url)
