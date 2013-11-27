@@ -30,6 +30,11 @@ debug_mode = 1
 class Downloader(QObject):
 
   MAX_CONNECTION = 2
+  TIMEOUT_SECOND = 10
+
+  NO_ERROR = 0
+  TIMEOUT_ERROR = 4
+  UNKNOWN_ERROR = -1
 
   def __init__(self, parent=None):
     QObject.__init__(self, parent)
@@ -42,10 +47,25 @@ class Downloader(QObject):
     self.fetchedFiles = {}
     self.clearCounts()
 
+    self.timer = QTimer()
+    self.timer.setSingleShot(True)
+    self.timer.setInterval(self.TIMEOUT_SECOND * 1000)
+    self.timer.timeout.connect(self.fetchTimedOut)
+
+    self.errorStatus = Downloader.NO_ERROR
+
   def clearCounts(self):
     self.fetchSuccesses = 0
     self.fetchErrors = 0
     self.cacheHits = 0
+
+  def fetchTimedOut(self):
+    self.log("Downloader.timeOut()")
+    self.errorStatus = Downloader.TIMEOUT_ERROR
+    # clear queue and abort sent requests
+    self.queue = []
+    for reply in self.replies:
+      reply.abort()
 
   def replyFinished(self):
     reply = self.sender()
@@ -73,6 +93,8 @@ class Downloader(QObject):
           qDebug("http status code: %d" % httpStatusCode)
     else:
       self.fetchErrors += 1
+      if self.errorStatus == self.NO_ERROR:
+        self.errorStatus = self.UNKNOWN_ERROR
 
     reply.deleteLater()
 
@@ -101,17 +123,22 @@ class Downloader(QObject):
   def fetchFilesAsync(self, urlList):
     self.log("fetchFilesAsync()")
     self.async = True
-    self.fetchedFiles = {}
+    self.queue = []
     self.clearCounts()
+    self.errorStatus = Downloader.NO_ERROR
+    self.fetchedFiles = {}
+
     for url in urlList:
       self.addToQueue(url)
 
     for i in range(self.MAX_CONNECTION):
       self.fetchNext()
 
+    self.timer.start()
     self.log("eventLoop.exec_()")
     self.eventLoop.exec_()
-    self.log("files fetched")
+    self.log("fetchFilesAsnc() End: %d" % self.errorStatus)
+    self.timer.stop()
     return self.fetchedFiles
 
   def addToQueue(self, url):

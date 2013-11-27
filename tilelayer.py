@@ -157,12 +157,17 @@ class TileLayer(QgsPluginLayer):
         cacheHits = self.downloader.cacheHits
         downloadedCount = self.downloader.fetchSuccesses - cacheHits
         msg = self.tr("{0} files downloaded. {1} caches hit.").format(downloadedCount, cacheHits)
-        if self.downloader.fetchErrors:
-          msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
-          if self.downloader.fetchSuccesses == 0:
-            msg = self.tr("Failed to download all {0} files. Check the layer extent - {1}").format(self.downloader.fetchErrors, self.name())
-            self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
+        barmsg = None
+        if self.downloader.errorStatus != Downloader.NO_ERROR:
+          if self.downloader.errorStatus == Downloader.TIMEOUT_ERROR:
+            barmsg = self.tr("Download Timeout - {}").format(self.name())
+          else:
+            msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
+            if self.downloader.fetchSuccesses == 0:
+              barmsg = self.tr("Failed to download all {0} files. - {1}").format(self.downloader.fetchErrors, self.name())
         self.iface.mainWindow().statusBar().showMessage(msg, 5000)
+        if barmsg:
+          self.iface.messageBar().pushMessage(self.plugin.pluginName, barmsg, QgsMessageBar.WARNING, 4)
 
       # save painter state and apply layer style
       painter.save()
