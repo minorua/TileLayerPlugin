@@ -24,10 +24,10 @@ email=akaginch@gmail.com
 # changelog=
 
 # tags are comma separated with spaces allowed
-tags=Tile
+tags=Tile,TMS
 
 homepage=http://space.geocities.jp/bischofia_vb/qgis-plugins/TileLayerPlugin/
-tracker=http://
+tracker=https://github.com/minorua/TileLayerPlugin
 repository=https://github.com/minorua/TileLayerPlugin
 icon=icon.png
 # experimental flag

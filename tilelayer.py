@@ -267,15 +267,14 @@ class TileLayer(QgsPluginLayer):
   def drawInfo(self, rendererContext, zoom, xmin, ymin, xmax, ymax):
     lines = []
     lines.append("TileLayer")
-    lines.append(" zoom: %d, tile extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
+    lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
     lines.append(" map extent: %s" % rendererContext.extent().toString() )
-    lines.append(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
-    lines.append(" size(proj): %d, %d" % (rendererContext.extent().width(), rendererContext.extent().height() ) )
-    lines.append(" canvas size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
+    lines.append(" map center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
+    lines.append(" map size: %d, %d" % (rendererContext.extent().width(), rendererContext.extent().height() ) )
+    lines.append(" canvas size (pixel): %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
     lines.append(" logicalDpiX: %d" % rendererContext.painter().device().logicalDpiX() )
     lines.append(" outputDpi: %lf" % self.iface.mapCanvas().mapRenderer().outputDpi() )
     lines.append(" mapUnitsPerPixel: %d" % rendererContext.mapToPixel().mapUnitsPerPixel() )
-    lines.append(" url: %s" % self.layerDef.serviceUrl )
     p = rendererContext.painter()
     for i, line in enumerate(lines):
       p.drawText(10, i * 20 + 20, line)
