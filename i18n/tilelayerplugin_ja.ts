@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="ja_JP">
+<!DOCTYPE TS><TS version="1.1" language="ja_JP">
 <context>
     <name>AddLayerDialog</name>
     <message>
@@ -39,7 +38,7 @@
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="122"/>
+        <location filename="../addlayerdialog.py" line="124"/>
         <source>Select external layers directory</source>
         <translation>外部レイヤ情報ディレクトリを選択して下さい</translation>
     </message>
@@ -113,69 +112,79 @@
 <context>
     <name>TileLayer</name>
     <message>
-        <location filename="../tilelayer.py" line="288"/>
+        <location filename="../tilelayer.py" line="149"/>
         <source>Tile count is over limit ({0}, max={1})</source>
         <translation>タイル数が制限を超えています ({0}, 最大={1})</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="299"/>
+        <location filename="../tilelayer.py" line="160"/>
         <source>{0} files downloaded. {1} caches hit.</source>
-        <translation>ダウンロード{0}ファイル. {1}キャッシュヒット.</translation>
+        <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="301"/>
+        <location filename="../tilelayer.py" line="312"/>
         <source> {} files failed.</source>
         <translation> {}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="303"/>
-        <source>Failed to download all {0} files. Check the layer extent - {1}</source>
-        <translation>全{0}ファイルのダウンロードに失敗しました. レイヤの範囲をチェックして下さい - {1}</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="240"/>
+        <location filename="../tilelayer.py" line="98"/>
         <source>TileLayer is available in EPSG:3857 or EPSG:900913</source>
         <translation>タイルレイヤはEPSG:3857またはEPSG:900913で利用可能です</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="467"/>
+        <location filename="../tilelayer.py" line="342"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="468"/>
+        <location filename="../tilelayer.py" line="343"/>
         <source>Provider name</source>
         <translation>プロバイダ名</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="469"/>
+        <location filename="../tilelayer.py" line="344"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="470"/>
+        <location filename="../tilelayer.py" line="345"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="474"/>
+        <location filename="../tilelayer.py" line="349"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="475"/>
+        <location filename="../tilelayer.py" line="350"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="476"/>
+        <location filename="../tilelayer.py" line="351"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="251"/>
+        <location filename="../tilelayer.py" line="130"/>
         <source>Current zoom level ({0}) is smaller than zmin ({1}): {2}</source>
         <translation>現在のズームレベル({0})は最小ズームレベル({1})よりも小さいです: {2}</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="164"/>
+        <source>Download Timeout - {}</source>
+        <translation>ダウンロードがタイムアウトしました - {}</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="168"/>
+        <source>Failed to download all {0} files. - {1}</source>
+        <translation>全{0}ファイルのダウンロードに失敗しました. - {1}</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="310"/>
+        <source>{0} of {1} files downloaded.</source>
+        <translation>{1}ファイルのうち{0}ファイルをダウンロードしました.</translation>
     </message>
 </context>
 <context>
