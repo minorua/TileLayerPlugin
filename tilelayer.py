@@ -101,20 +101,16 @@ class TileLayer(QgsPluginLayer):
     # calculate zoom level
     mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
     zoom = int(math.ceil(math.log(mpp1 / rendererContext.mapToPixel().mapUnitsPerPixel(), 2) + 1))
-    zoom = min(zoom, self.layerDef.zmax)
+    zoom = max(0, min(zoom, self.layerDef.zmax))
     #zoom = max(self.layerDef.zmin, min(zoom, self.layerDef.zmax))
-    if zoom < self.layerDef.zmin:
-      if self.plugin.navigationMessagesEnabled:
-        msg = self.tr("Current zoom level ({0}) is smaller than zmin ({1}): {2}").format(zoom, self.layerDef.zmin, self.layerDef.title)
-        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
-      return True
 
     # calculate tile range (yOrigin is top)
     size = self.layerDef.TSIZE1 / 2 ** (zoom - 1)
-    ulx = int((rendererContext.extent().xMinimum() + self.layerDef.TSIZE1) / size)
-    uly = int((self.layerDef.TSIZE1 - rendererContext.extent().yMaximum()) / size)
-    lrx = int((rendererContext.extent().xMaximum() + self.layerDef.TSIZE1) / size)
-    lry = int((self.layerDef.TSIZE1 - rendererContext.extent().yMinimum()) / size)
+    matrixSize = 2 ** zoom
+    ulx = max(0, int((rendererContext.extent().xMinimum() + self.layerDef.TSIZE1) / size))
+    uly = max(0, int((self.layerDef.TSIZE1 - rendererContext.extent().yMaximum()) / size))
+    lrx = min(int((rendererContext.extent().xMaximum() + self.layerDef.TSIZE1) / size), matrixSize - 1)
+    lry = min(int((self.layerDef.TSIZE1 - rendererContext.extent().yMinimum()) / size), matrixSize - 1)
 
     # bounding box limit
     if self.layerDef.bbox:
@@ -126,6 +122,13 @@ class TileLayer(QgsPluginLayer):
       if lrx < ulx or lry < uly:
         # the tile range is out of bounding box
         return True
+
+    # zoom limit
+    if zoom < self.layerDef.zmin:
+      if self.plugin.navigationMessagesEnabled:
+        msg = self.tr("Current zoom level ({0}) is smaller than zmin ({1}): {2}").format(zoom, self.layerDef.zmin, self.layerDef.title)
+        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
+      return True
 
     if self.layerDef.serviceUrl[0] == ":":
       # save painter state
