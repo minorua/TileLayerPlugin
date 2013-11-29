@@ -39,7 +39,7 @@ class LayerDefaultSettings:
 class TileLayer(QgsPluginLayer):
 
   LAYER_TYPE = "TileLayer"
-  MAX_TILE_COUNT = 64
+  MAX_TILE_COUNT = 100
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
   def __init__(self, plugin, layerDef, providerNameLabelVisibility=1):
@@ -99,11 +99,16 @@ class TileLayer(QgsPluginLayer):
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
-    # calculate zoom level
-    mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
-    zoom = int(math.ceil(math.log(mpp1 / rendererContext.mapToPixel().mapUnitsPerPixel(), 2) + 1))
-    zoom = max(0, min(zoom, self.layerDef.zmax))
-    #zoom = max(self.layerDef.zmin, min(zoom, self.layerDef.zmax))
+    isDpiEqualToCanvas = rendererContext.painter().device().logicalDpiX() == self.iface.mapCanvas().mapRenderer().outputDpi()
+    if isDpiEqualToCanvas:
+      # calculate zoom level
+      mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
+      zoom = int(math.ceil(math.log(mpp1 / rendererContext.mapToPixel().mapUnitsPerPixel(), 2) + 1))
+      zoom = max(0, min(zoom, self.layerDef.zmax))
+      #zoom = max(self.layerDef.zmin, zoom)
+    else:
+      # for print composer output image, use last zoom level of map item on print composer (or map canvas)
+      zoom = self.canvasLastZoom
 
     # calculate tile range (yOrigin is top)
     size = self.layerDef.TSIZE1 / 2 ** (zoom - 1)
@@ -194,6 +199,10 @@ class TileLayer(QgsPluginLayer):
       painter.drawImage(5, 5, image)
     # restore painter state
     painter.restore()
+
+    if isDpiEqualToCanvas:
+      # save zoom level for printing (output with different dpi from map canvas)
+      self.canvasLastZoom = zoom
     return True
 
   def drawTiles(self, rendererContext, tiles):
