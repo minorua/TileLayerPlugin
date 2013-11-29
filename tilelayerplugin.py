@@ -75,7 +75,8 @@ class TileLayerPlugin:
         #self.iface.addPluginToMenu(u"&TileLayer Plugin", self.action)
 
         # Register plugin layer type
-        QgsPluginLayerRegistry.instance().addPluginLayerType(TileLayerType(self))
+        self.tileLayerType = TileLayerType(self)
+        QgsPluginLayerRegistry.instance().addPluginLayerType(self.tileLayerType)
 
     def unload(self):
         # Remove the plugin menu item and icon
