@@ -69,7 +69,7 @@
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>Provider name label on the bottom right</string>
+        <string>Place provider name label on the bottom right</string>
        </property>
        <property name="checked">
         <bool>true</bool>

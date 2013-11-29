@@ -25,8 +25,6 @@ from PyQt4.QtGui import *
 from qgis.core import *
 # Initialize Qt resources from file resources.py
 import resources_rc
-# Import the code for the dialog
-from addlayerdialog import AddLayerDialog
 import os.path
 from tilelayer import *
 
@@ -52,8 +50,8 @@ class TileLayerPlugin:
                 QCoreApplication.installTranslator(self.translator)
 
         self.pluginName = QCoreApplication.translate("TileLayerPlugin", "TileLayerPlugin")
-        self.navigationMessagesEnabled = True
         self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 10, type=int))
+        self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
 
     def initGui(self):
         # Create action that will start plugin configuration
@@ -91,6 +89,7 @@ class TileLayerPlugin:
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
 
     def run(self):
+      from addlayerdialog import AddLayerDialog
       dialog = AddLayerDialog()
       dialog.show()
       accepted = dialog.exec_()
@@ -110,6 +109,7 @@ class TileLayerPlugin:
       accepted = dialog.exec_()
       if accepted:
         self.downloadTimeout = dialog.ui.spinBox_downloadTimeout.value()
+        self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
 
     def setCRS(self):
       # based on the code of openlayers plugin

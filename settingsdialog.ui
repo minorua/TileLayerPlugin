@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>512</width>
-    <height>99</height>
+    <height>121</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,6 +69,13 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_NavigationMessages">
+       <property name="text">
+        <string>Display navigation messages</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">

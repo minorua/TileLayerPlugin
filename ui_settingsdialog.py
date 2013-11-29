@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\settingsdialog.ui'
 #
-# Created: Wed Nov 27 21:26:16 2013
+# Created: Fri Nov 29 10:45:32 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
-        Dialog.resize(512, 99)
+        Dialog.resize(512, 121)
         self.gridLayout = QtGui.QGridLayout(Dialog)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -51,6 +51,9 @@ class Ui_Dialog(object):
         self.spinBox_downloadTimeout.setObjectName(_fromUtf8("spinBox_downloadTimeout"))
         self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.spinBox_downloadTimeout)
         self.verticalLayout.addLayout(self.formLayout)
+        self.checkBox_NavigationMessages = QtGui.QCheckBox(Dialog)
+        self.checkBox_NavigationMessages.setObjectName(_fromUtf8("checkBox_NavigationMessages"))
+        self.verticalLayout.addWidget(self.checkBox_NavigationMessages)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
@@ -68,4 +71,5 @@ class Ui_Dialog(object):
         self.label.setText(QtGui.QApplication.translate("Dialog", "External layers directory", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_externalDirectory.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Download time-out (sec)", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_NavigationMessages.setText(QtGui.QApplication.translate("Dialog", "Display navigation messages", None, QtGui.QApplication.UnicodeUTF8))
 

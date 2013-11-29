@@ -35,6 +35,7 @@ class SettingsDialog(QDialog):
     settings = QSettings()
     self.ui.lineEdit_externalDirectory.setText(settings.value("/TileLayerPlugin/extDir", "", type=unicode))
     self.ui.spinBox_downloadTimeout.setValue(int(settings.value("/TileLayerPlugin/timeout", 10, type=int)))
+    self.ui.checkBox_NavigationMessages.setCheckState(int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int)))
 
   def accept(self):
     QDialog.accept(self)
@@ -43,6 +44,7 @@ class SettingsDialog(QDialog):
     settings = QSettings()
     settings.setValue("/TileLayerPlugin/extDir", self.ui.lineEdit_externalDirectory.text())
     settings.setValue("/TileLayerPlugin/timeout", self.ui.spinBox_downloadTimeout.value())
+    settings.setValue("/TileLayerPlugin/naviMsg", self.ui.checkBox_NavigationMessages.checkState())
 
   def selectExternalDirectory(self):
     # show select directory dialog
