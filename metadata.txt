@@ -12,7 +12,7 @@
 name=TileLayer Plugin
 qgisMinimumVersion=2.0
 description=Plugin layer for Tile Maps. Easy to add tile maps!
-version=0.10
+version=0.11
 author=Minoru Akagi
 email=akaginch@gmail.com
 
@@ -26,7 +26,7 @@ email=akaginch@gmail.com
 # tags are comma separated with spaces allowed
 tags=Tile,TMS
 
-homepage=http://space.geocities.jp/bischofia_vb/qgis-plugins/TileLayerPlugin/
+homepage=https://github.com/minorua/TileLayerPlugin
 tracker=https://github.com/minorua/TileLayerPlugin
 repository=https://github.com/minorua/TileLayerPlugin
 icon=icon.png
