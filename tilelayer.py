@@ -193,11 +193,14 @@ class TileLayer(QgsPluginLayer):
           self.iface.messageBar().pushMessage(self.plugin.pluginName, barmsg, QgsMessageBar.WARNING, 4)
 
       # apply layer style
-      self.prepareStyle(painter)
+      oldStyle = self.prepareStyle(painter)
 
       # draw tiles
       self.drawTiles(renderContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
       #self.drawTilesDirectly(renderContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
+
+      # restore layer style
+      self.restoreStyle(painter, oldStyle)
 
       # draw provider name on the bottom right
       if self.providerNameLabelVisibility and self.layerDef.providerName != "":
