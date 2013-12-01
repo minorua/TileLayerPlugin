@@ -246,7 +246,7 @@ class TileLayer(QgsPluginLayer):
     p = rendererContext.painter()
     for url, tile in tiles.tiles.items():
       self.log("Draw tile: zoom: %d, x:%d, y:%d, data:%s" % (tile.zoom, tile.x, tile.y, str(tile.data)))
-      rect = self.getPixelRect(rendererContext, tile.zoom, tile.x, tile.y, sdx, sdy)
+      rect = self.getTileRect(rendererContext, tile.zoom, tile.x, tile.y, sdx, sdy)
       if tile.data is not None:
         image = QImage()
         image.loadFromData(tile.data)
@@ -278,7 +278,7 @@ class TileLayer(QgsPluginLayer):
       self.drawInfo(rendererContext, zoom, ulx, uly, lrx, lry)
 
   def drawFrame(self, rendererContext, zoom, x, y, sdx, sdy):
-    rect = self.getPixelRect(rendererContext, zoom, x, y, sdx, sdy)
+    rect = self.getTileRect(rendererContext, zoom, x, y, sdx, sdy)
     p = rendererContext.painter()
     p.drawRect(rect)
 
@@ -288,7 +288,7 @@ class TileLayer(QgsPluginLayer):
         self.drawFrame(rendererContext, zoom, x, y, sdx, sdy)
 
   def drawNumber(self, rendererContext, zoom, x, y, sdx, sdy):
-    rect = self.getPixelRect(rendererContext, zoom, x, y, sdx, sdy)
+    rect = self.getTileRect(rendererContext, zoom, x, y, sdx, sdy)
     p = rendererContext.painter()
     if not self.layerDef.yOriginTop:
       y = (2 ** zoom - 1) - y
@@ -316,7 +316,8 @@ class TileLayer(QgsPluginLayer):
       p.drawText(10, (i + 1) * textRect.height(), line)
       self.log(line)
 
-  def getPixelRect(self, rendererContext, zoom, x, y, sdx=1.0, sdy=1.0):
+  def getTileRect(self, rendererContext, zoom, x, y, sdx=1.0, sdy=1.0):
+    """ get tile pixel rect in the render context """
     r = self.layerDef.getMapRect(zoom, x, y)
     map2pix = rendererContext.mapToPixel()
     topLeft = map2pix.transform(r.xMinimum(), r.yMaximum())
