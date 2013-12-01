@@ -92,7 +92,7 @@ class AddLayerDialog(QDialog):
       vals = line.split("\t")
       nvals = len(vals)
       if nvals < 3:
-        #TODO: log warning
+        # invalid record
         continue
       title, providerName, url = vals[0:3]
       if nvals < 4:

@@ -39,7 +39,7 @@ def degreesToMercatorMeters(lon, lat):
   y = R * math.log(math.tan(math.pi / 4 + (lat * math.pi / 180) / 2))
   return x, y
 
-def degreesToTile(zoom, lon, lat):    #TODO: move into TileServiceInfo
+def degreesToTile(zoom, lon, lat):
   x, y = degreesToMercatorMeters(lon, lat)
   size = TileServiceInfo.TSIZE1 / 2 ** (zoom - 1)
   tx = int((x + TileServiceInfo.TSIZE1) / size)
