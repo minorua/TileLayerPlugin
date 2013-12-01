@@ -136,10 +136,27 @@ class TileLayer(QgsPluginLayer):
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
+    # save painter state
+    painter.save()
+
+    pt = rendererContext.mapToPixel().transform(rendererContext.extent().xMaximum(), rendererContext.extent().yMinimum())
+    scaleX = pt.x() / painter.viewport().size().width()
+    scaleY = pt.y() / painter.viewport().size().height()
+    painter.scale(scaleX, scaleY)
+
+    if debug_mode:
+      qDebug("Bottom-right of extent (pixel): %f, %f" % (pt.x(), pt.y()))   # Top-left is (0, 0)
+      qDebug("Calculated scale: %f, %f" % (scaleX, scaleY))
+
+    # set pen and font
+    painter.setPen(Qt.black)
+    font = QFont(painter.font())
+    font.setPointSize(12)
+    painter.setFont(font)
+
     if self.layerDef.serviceUrl[0] == ":":
-      # save painter state
-      painter.save()
-      self.drawDebugInfo(rendererContext, zoom, ulx, uly, lrx, lry)
+      painter.setBrush(QBrush(Qt.NoBrush))
+      self.drawDebugInfo(rendererContext, zoom, ulx, uly, lrx, lry, 1.0 / scaleX, 1.0 / scaleY)
     else:
       # create Tiles class object and throw url into it
       self.tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
@@ -175,13 +192,12 @@ class TileLayer(QgsPluginLayer):
         if barmsg:
           self.iface.messageBar().pushMessage(self.plugin.pluginName, barmsg, QgsMessageBar.WARNING, 4)
 
-      # save painter state and apply layer style
-      painter.save()
+      # apply layer style
       self.prepareStyle(painter)
 
       # draw tiles
-      self.drawTiles(rendererContext, self.tiles)
-      #self.drawTilesDirectly(rendererContext, self.tiles)
+      self.drawTiles(rendererContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
+      #self.drawTilesDirectly(rendererContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
 
       # draw provider name on the bottom right
       if self.providerNameLabelVisibility and self.layerDef.providerName != "":
@@ -192,6 +208,10 @@ class TileLayer(QgsPluginLayer):
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
         painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.providerName)
+
+        if debug_mode:
+          #painter.fillRect(rect, QColor(240, 240, 240, 200))
+          qDebug("textRect of provider label: " + str(textRect))
 
     if debug_mode:
       # draw plugin icon
@@ -205,7 +225,7 @@ class TileLayer(QgsPluginLayer):
       self.canvasLastZoom = zoom
     return True
 
-  def drawTiles(self, rendererContext, tiles):
+  def drawTiles(self, rendererContext, tiles, sdx=1.0, sdy=1.0):
     # create an image that has the same resolution as the tiles
     image = tiles.image()
 
@@ -214,7 +234,7 @@ class TileLayer(QgsPluginLayer):
     extent = tiles.extent()
     topLeft = map2pixel.transform(extent.topLeft().x(), extent.topLeft().y())
     bottomRight = map2pixel.transform(extent.bottomRight().x(), extent.bottomRight().y())
-    rect = QRect(QPoint(round(topLeft.x()), round(topLeft.y())), QPoint(round(bottomRight.x()), round(bottomRight.y())))
+    rect = QRect(QPoint(round(topLeft.x() * sdx), round(topLeft.y() * sdy)), QPoint(round(bottomRight.x() * sdx), round(bottomRight.y() * sdy)))
 
     # draw the image on the map canvas
     rendererContext.painter().drawImage(rect, image)
@@ -222,11 +242,11 @@ class TileLayer(QgsPluginLayer):
     self.log("Tiles extent: " + str(extent))
     self.log("Draw into canvas rect: " + str(rect))
 
-  def drawTilesDirectly(self, rendererContext, tiles):
+  def drawTilesDirectly(self, rendererContext, tiles, sdx=1.0, sdy=1.0):
     p = rendererContext.painter()
     for url, tile in tiles.tiles.items():
       self.log("Draw tile: zoom: %d, x:%d, y:%d, data:%s" % (tile.zoom, tile.x, tile.y, str(tile.data)))
-      rect = self.getPixelRect(rendererContext, tile.zoom, tile.x, tile.y)
+      rect = self.getPixelRect(rendererContext, tile.zoom, tile.x, tile.y, sdx, sdy)
       if tile.data is not None:
         image = QImage()
         image.loadFromData(tile.data)
@@ -249,35 +269,35 @@ class TileLayer(QgsPluginLayer):
     painter.setCompositionMode(oldStyles[1])
     painter.setOpacity(oldStyles[2])
 
-  def drawDebugInfo(self, rendererContext, zoom, ulx, uly, lrx, lry):
+  def drawDebugInfo(self, rendererContext, zoom, ulx, uly, lrx, lry, sdx, sdy):
     if "frame" in self.layerDef.serviceUrl:
-      self.drawFrames(rendererContext, zoom, ulx, uly, lrx, lry)
+      self.drawFrames(rendererContext, zoom, ulx, uly, lrx, lry, sdx, sdy)
     if "number" in self.layerDef.serviceUrl:
-      self.drawNumbers(rendererContext, zoom, ulx, uly, lrx, lry)
+      self.drawNumbers(rendererContext, zoom, ulx, uly, lrx, lry, sdx, sdy)
     if "info" in self.layerDef.serviceUrl:
       self.drawInfo(rendererContext, zoom, ulx, uly, lrx, lry)
 
-  def drawFrame(self, rendererContext, zoom, x, y):
-    rect = self.getPixelRect(rendererContext, zoom, x, y)
+  def drawFrame(self, rendererContext, zoom, x, y, sdx, sdy):
+    rect = self.getPixelRect(rendererContext, zoom, x, y, sdx, sdy)
     p = rendererContext.painter()
     p.drawRect(rect)
 
-  def drawFrames(self, rendererContext, zoom, xmin, ymin, xmax, ymax):
+  def drawFrames(self, rendererContext, zoom, xmin, ymin, xmax, ymax, sdx, sdy):
     for y in range(ymin, ymax + 1):
       for x in range(xmin, xmax + 1):
-        self.drawFrame(rendererContext, zoom, x, y)
+        self.drawFrame(rendererContext, zoom, x, y, sdx, sdy)
 
-  def drawNumber(self, rendererContext, zoom, x, y):
-    rect = self.getPixelRect(rendererContext, zoom, x, y)
+  def drawNumber(self, rendererContext, zoom, x, y, sdx, sdy):
+    rect = self.getPixelRect(rendererContext, zoom, x, y, sdx, sdy)
     p = rendererContext.painter()
     if not self.layerDef.yOriginTop:
       y = (2 ** zoom - 1) - y
     p.drawText(rect, Qt.AlignCenter, "(%d, %d)\nzoom: %d" % (x, y, zoom));
 
-  def drawNumbers(self, rendererContext, zoom, xmin, ymin, xmax, ymax):
+  def drawNumbers(self, rendererContext, zoom, xmin, ymin, xmax, ymax, sdx, sdy):
     for y in range(ymin, ymax + 1):
       for x in range(xmin, xmax + 1):
-        self.drawNumber(rendererContext, zoom, x, y)
+        self.drawNumber(rendererContext, zoom, x, y, sdx, sdy)
 
   def drawInfo(self, rendererContext, zoom, xmin, ymin, xmax, ymax):
     lines = []
@@ -289,18 +309,19 @@ class TileLayer(QgsPluginLayer):
     lines.append(" canvas size (pixel): %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
     lines.append(" logicalDpiX: %f" % rendererContext.painter().device().logicalDpiX() )
     lines.append(" outputDpi: %f" % self.iface.mapCanvas().mapRenderer().outputDpi() )
-    lines.append(" mapUnitsPerPixel: %f" % rendererContext.mapToPixel().mapUnitsPerPixel() )
+    lines.append(" mapToPixel: %s" % rendererContext.mapToPixel().showParameters() )
     p = rendererContext.painter()
+    textRect = p.boundingRect(QRect(QPoint(0, 0), p.viewport().size()), Qt.AlignLeft, "Q")
     for i, line in enumerate(lines):
-      p.drawText(10, i * 20 + 20, line)
+      p.drawText(10, (i + 1) * textRect.height(), line)
       self.log(line)
 
-  def getPixelRect(self, rendererContext, zoom, x, y):
+  def getPixelRect(self, rendererContext, zoom, x, y, sdx=1.0, sdy=1.0):
     r = self.layerDef.getMapRect(zoom, x, y)
     map2pix = rendererContext.mapToPixel()
     topLeft = map2pix.transform(r.xMinimum(), r.yMaximum())
     bottomRight = map2pix.transform(r.xMaximum(), r.yMinimum())
-    return QRect(QPoint(round(topLeft.x()), round(topLeft.y())), QPoint(round(bottomRight.x()), round(bottomRight.y())))
+    return QRect(QPoint(round(topLeft.x() * sdx), round(topLeft.y() * sdy)), QPoint(round(bottomRight.x() * sdx), round(bottomRight.y() * sdy)))
     #return QRectF(QPointF(round(topLeft.x()), round(topLeft.y())), QPointF(round(bottomRight.x()), round(bottomRight.y())))
     #return QgsRectangle(topLeft, bottomRight)
 
