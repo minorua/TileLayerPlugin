@@ -9,10 +9,10 @@ After installing this plugin, you can add tile layers into map canvas from the l
 A few layer styles can be changed in the layer properties dialog. You can set sufficient cache size (in kilobytes) in the Network/Cache Settings of the Options dialog in order to make effective use of cache.
 
 ### Limitations
-With this plugin, you can view only web mercator projection tile maps. Tile layers don't appear when the coordinate reference system is not EPSG:3857 or EPSG:900913. 
+With this plugin, you can view only web mercator projection tile maps. Tile layers don't appear when the coordinate reference system is not EPSG:3857.
 
 ### Layer information file format
-Layer information file is a text file. Each line has information for a tile layer, and fields are separated with tab character. The file encoding is UTF-8.
+Layer information file is a text file. Each line has information for a tile layer. Fields are separated with tab character. The file extension is **tsv** and the file encoding is UTF-8.
 
 **Line format is:**  
 `title  providerName  url  yOriginTop  zmin  zmax  xmin  ymin  xmax  ymax`

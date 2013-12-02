@@ -21,6 +21,7 @@
 """
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from qgis.core import QgsMessageLog
 from ui_addlayerdialog import Ui_Dialog
 import os
 import codecs
@@ -74,47 +75,58 @@ class AddLayerDialog(QDialog):
     for fileInfo in d.entryInfoList():
       if debug_mode == 0 and fileInfo.fileName() == "debug.tsv":
         continue
-      self.importFromTsv(fileInfo.filePath())
+      if fileInfo.suffix().lower() == "tsv":
+        self.importFromTsv(fileInfo.filePath())
 
   # Line Format is:
   # title providerName url [yOriginTop [zmin zmax [xmin ymin xmax ymax ]]]
   def importFromTsv(self, filename):
     # append file item
     rootItem = self.model.invisibleRootItem()
-    parent = QStandardItem(os.path.splitext(os.path.basename(filename))[0])
+    basename = os.path.basename(filename)
+    parent = QStandardItem(os.path.splitext(basename)[0])
     rootItem.appendRow([parent])
 
     # load service info from tsv file
-    f = codecs.open(filename, "r", "utf-8")
-    for line in f.readlines():
+    try:
+      with codecs.open(filename, "r", "utf-8") as f:
+        lines = f.readlines()
+    except:
+      QgsMessageLog.logMessage(self.tr("Fail to read: {}").format(basename), self.tr("TileLayerPlugin"))
+      return False
+
+    for i, line in enumerate(lines):
       if line.startswith("#"):
         continue
       vals = line.split("\t")
       nvals = len(vals)
-      if nvals < 3:
-        # invalid record
-        continue
-      title, providerName, url = vals[0:3]
-      if nvals < 4:
-        serviceInfo = TileServiceInfo(title, providerName, url)
-      else:
-        yOriginTop = int(vals[3])
-        if nvals < 6:
-          serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop)
+      try:
+        if nvals < 3:
+          raise
+        title, providerName, url = vals[0:3]
+        if nvals < 4:
+          serviceInfo = TileServiceInfo(title, providerName, url)
         else:
-          zmin, zmax = map(int, vals[4:6])
-          if nvals < 10:
-            serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax)
+          yOriginTop = int(vals[3])
+          if nvals < 6:
+            serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop)
           else:
-            bbox = BoundingBox.fromString(",".join(vals[6:10]))
-            serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax, bbox)
+            zmin, zmax = map(int, vals[4:6])
+            if nvals < 10:
+              serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax)
+            else:
+              bbox = BoundingBox.fromString(",".join(vals[6:10]))
+              serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax, bbox)
+      except:
+        QgsMessageLog.logMessage(self.tr("Invalid line format: {} line {}").format(basename, i + 1), self.tr("TileLayerPlugin"))
+        continue
 
       # append the service info into the tree
       vals = serviceInfo.toArrayForTreeView() + [len(self.serviceInfoList)]
       rowItems = map(QStandardItem, map(unicode, vals))
       parent.appendRow(rowItems)
       self.serviceInfoList.append(serviceInfo)
-    f.close()
+    return True
 
   def selectedServiceInfoList(self):
     list = []
