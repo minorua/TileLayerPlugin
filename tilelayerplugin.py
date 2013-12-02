@@ -118,10 +118,10 @@ class TileLayerPlugin:
     def setCRS(self):
       crs = QgsCoordinateReferenceSystem("EPSG:3857")
       mapCanvas = self.iface.mapCanvas()
-      mapCanvas.mapRenderer().setProjectionsEnabled(True) 
       currentCrs = mapCanvas.mapRenderer().destinationCrs()
       if currentCrs == crs:
         return
+      mapCanvas.mapRenderer().setProjectionsEnabled(True) 
       trans = QgsCoordinateTransform(currentCrs, crs)
       extent = trans.transform(mapCanvas.extent(), QgsCoordinateTransform.ForwardTransform)
       mapCanvas.mapRenderer().setDestinationCrs(crs)
