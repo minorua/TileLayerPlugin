@@ -8,8 +8,11 @@
         begin                : 2012-12-16
         copyright            : (C) 2013 by Minoru Akagi
         email                : akaginch@gmail.com
- ***************************************************************************/
 
+ Partly based on openlayers_plugin.py
+        copyright            : (C) 2009 by Pirmin Kalberer, Sourcepole
+ ***************************************************************************/
+ 
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -113,7 +116,6 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
 
     def setCRS(self):
-      # based on the code of openlayers plugin
       crs = QgsCoordinateReferenceSystem("EPSG:3857")
       mapCanvas = self.iface.mapCanvas()
       mapCanvas.mapRenderer().setProjectionsEnabled(True) 
