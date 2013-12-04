@@ -126,6 +126,9 @@ class Downloader(QObject):
     self.errorStatus = Downloader.NO_ERROR
     self.fetchedFiles = {}
 
+    if len(urlList) == 0:
+      return self.fetchedFiles
+
     for url in urlList:
       self.addToQueue(url)
 

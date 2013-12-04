@@ -159,38 +159,45 @@ class TileLayer(QgsPluginLayer):
       self.drawDebugInfo(renderContext, zoom, ulx, uly, lrx, lry, 1.0 / scaleX, 1.0 / scaleY)
     else:
       # create Tiles class object and throw url into it
-      self.tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
+      tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
       urls = []
       for ty in range(uly, lry + 1):
         for tx in range(ulx, lrx + 1):
+          data = None
           url = self.layerDef.tileUrl(zoom, tx, ty)
-          self.tiles.addTile(url, Tile(zoom, tx, ty))
-          urls.append(url)
+          if self.tiles and zoom == self.tiles.zoom and url in self.tiles.tiles:
+            data = self.tiles.tiles[url].data   # use last fetched image if exists
+          tiles.addTile(url, Tile(zoom, tx, ty, data))
+          if data is None:
+            urls.append(url)
 
       if len(urls) > self.MAX_TILE_COUNT:
         msg = self.tr("Tile count is over limit ({0}, max={1})").format(len(urls), self.MAX_TILE_COUNT)
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
         return True
 
+      self.tiles = tiles
       # download tile data
-      files = self.downloader.fetchFilesAsync(urls, self.plugin.downloadTimeout)
-      for url in files.keys():
-        self.tiles.setImageData(url, files[url])
-      if self.iface:
-        cacheHits = self.downloader.cacheHits
-        downloadedCount = self.downloader.fetchSuccesses - cacheHits
-        msg = self.tr("{0} files downloaded. {1} caches hit.").format(downloadedCount, cacheHits)
-        barmsg = None
-        if self.downloader.errorStatus != Downloader.NO_ERROR:
-          if self.downloader.errorStatus == Downloader.TIMEOUT_ERROR:
-            barmsg = self.tr("Download Timeout - {}").format(self.name())
-          else:
-            msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
-            if self.downloader.fetchSuccesses == 0:
-              barmsg = self.tr("Failed to download all {0} files. - {1}").format(self.downloader.fetchErrors, self.name())
-        self.iface.mainWindow().statusBar().showMessage(msg, 5000)
-        if barmsg:
-          self.iface.messageBar().pushMessage(self.plugin.pluginName, barmsg, QgsMessageBar.WARNING, 4)
+      if len(urls) > 0:
+        files = self.downloader.fetchFilesAsync(urls, self.plugin.downloadTimeout)
+        for url in files.keys():
+          self.tiles.setImageData(url, files[url])
+
+        if self.iface:
+          cacheHits = self.downloader.cacheHits
+          downloadedCount = self.downloader.fetchSuccesses - cacheHits
+          msg = self.tr("{0} files downloaded. {1} caches hit.").format(downloadedCount, cacheHits)
+          barmsg = None
+          if self.downloader.errorStatus != Downloader.NO_ERROR:
+            if self.downloader.errorStatus == Downloader.TIMEOUT_ERROR:
+              barmsg = self.tr("Download Timeout - {}").format(self.name())
+            else:
+              msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
+              if self.downloader.fetchSuccesses == 0:
+                barmsg = self.tr("Failed to download all {0} files. - {1}").format(self.downloader.fetchErrors, self.name())
+          self.iface.mainWindow().statusBar().showMessage(msg, 5000)
+          if barmsg:
+            self.iface.messageBar().pushMessage(self.plugin.pluginName, barmsg, QgsMessageBar.WARNING, 4)
 
       # apply layer style
       oldStyle = self.prepareStyle(painter)
