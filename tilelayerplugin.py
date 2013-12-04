@@ -73,12 +73,11 @@ class TileLayerPlugin:
         self.actionSettings.triggered.connect(self.settings)
 
         # Add toolbar button and menu item
-        self.iface.addToolBarIcon(self.action)
+        self.iface.layerToolBar().addAction(self.action)
+        self.iface.insertAddLayerAction(self.action)
         self.iface.addPluginToMenu(self.pluginName, self.action)
         self.iface.addPluginToMenu(self.pluginName, self.actionSettings)
-        #self.iface.layerToolBar().addAction(self.action)
-        #self.iface.insertAddLayerAction(self.action)
-        #self.iface.newLayerMenu().addAction(self.action)
+        #self.iface.addToolBarIcon(self.action)
 
         # Register plugin layer type
         self.tileLayerType = TileLayerType(self)
@@ -86,12 +85,11 @@ class TileLayerPlugin:
 
     def unload(self):
         # Remove the plugin menu item and icon
-        self.iface.removeToolBarIcon(self.action)
+        self.iface.layerToolBar().removeAction(self.action)
+        self.iface.removeAddLayerAction(self.action)
         self.iface.removePluginMenu(self.pluginName, self.action)
         self.iface.removePluginMenu(self.pluginName, self.actionSettings)
-        #self.iface.layerToolBar().removeAction(self.action)
-        #self.iface.removeAddLayerAction(self.action)
-        #self.iface.newLayerMenu().removeAction(self.action)
+        #self.iface.removeToolBarIcon(self.action)
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
