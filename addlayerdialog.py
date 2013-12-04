@@ -47,7 +47,7 @@ class AddLayerDialog(QDialog):
 
   def setupTreeView(self):
     # tree view header labels
-    headers = [self.tr("Title"), self.tr("ProviderName"), self.tr("Url"), self.tr("Zoom"), self.tr("Extent"), self.tr("yOrigin")] + ["index"]
+    headers = [self.tr("Title"), self.tr("Credit"), self.tr("Url"), self.tr("Zoom"), self.tr("Extent"), self.tr("yOrigin")] + ["index"]
     self.indexColumn = len(headers) - 1
 
     self.model = QStandardItemModel(0, len(headers))

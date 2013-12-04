@@ -86,7 +86,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_ProviderNameLabelVisibility">
           <property name="text">
-           <string>Place provider name label on the bottom right</string>
+           <string>Place the credit on the bottom right corner</string>
           </property>
          </widget>
         </item>

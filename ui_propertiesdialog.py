@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\propertiesdialog.ui'
 #
-# Created: Fri Nov 29 10:27:07 2013
+# Created: Wed Dec 04 09:21:47 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -87,6 +87,6 @@ class Ui_Dialog(object):
         self.groupBox_Style.setTitle(QtGui.QApplication.translate("Dialog", "Style", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Transparency", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Blending mode", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Place provider name label on the bottom right", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Place the credit on the bottom right corner", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_Properties.setTitle(QtGui.QApplication.translate("Dialog", "Properties", None, QtGui.QApplication.UnicodeUTF8))
 

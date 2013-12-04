@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\addlayerdialog.ui'
 #
-# Created: Fri Nov 29 10:27:02 2013
+# Created: Wed Dec 04 09:22:07 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -73,7 +73,7 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Add tile layer", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "External layers directory:", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_externalDirectory.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Place provider name label on the bottom right", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Place the credit on the bottom right corner", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Add.setText(QtGui.QApplication.translate("Dialog", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Close.setText(QtGui.QApplication.translate("Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
