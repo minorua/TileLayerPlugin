@@ -42,23 +42,23 @@ class TileLayer(QgsPluginLayer):
   MAX_TILE_COUNT = 100
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
-  def __init__(self, plugin, layerDef, providerNameLabelVisibility=1):
+  def __init__(self, plugin, layerDef, creditVisibility=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.plugin = plugin
     self.iface = plugin.iface
     self.layerDef = layerDef
-    self.providerNameLabelVisibility = 1 if providerNameLabelVisibility else 0
+    self.creditVisibility = 1 if creditVisibility else 0
 
     # set custom properties
     self.setCustomProperty("title", layerDef.title)
-    self.setCustomProperty("providerName", layerDef.providerName)
+    self.setCustomProperty("credit", layerDef.credit)
     self.setCustomProperty("serviceUrl", layerDef.serviceUrl)
     self.setCustomProperty("yOriginTop", layerDef.yOriginTop)
     self.setCustomProperty("zmin", layerDef.zmin)
     self.setCustomProperty("zmax", layerDef.zmax)
     if layerDef.bbox:
       self.setCustomProperty("bbox", layerDef.bbox.toString())
-    self.setCustomProperty("providerNameLabelVisibility", self.providerNameLabelVisibility)
+    self.setCustomProperty("creditVisibility", self.creditVisibility)
 
     crs = QgsCoordinateReferenceSystem("EPSG:3857")
     self.setCrs(crs)
@@ -83,9 +83,9 @@ class TileLayer(QgsPluginLayer):
     self.transparency = transparency
     self.setCustomProperty("transparency", transparency)
 
-  def setProviderNameLabelVisibility(self, visible):
-    self.providerNameLabelVisibility = visible
-    self.setCustomProperty("providerNameLabelVisibility", 1 if visible else 0)
+  def setCreditVisibility(self, visible):
+    self.creditVisibility = visible
+    self.setCustomProperty("creditVisibility", 1 if visible else 0)
 
   def draw(self, renderContext):
     if renderContext.extent().isEmpty():
@@ -202,19 +202,19 @@ class TileLayer(QgsPluginLayer):
       # restore layer style
       self.restoreStyle(painter, oldStyle)
 
-      # draw provider name on the bottom right
-      if self.providerNameLabelVisibility and self.layerDef.providerName != "":
+      # draw credit on the bottom right corner
+      if self.creditVisibility and self.layerDef.credit != "":
         margin, paddingH, paddingV = (5, 4, 3)
         canvasSize = painter.viewport().size()
         rect = QRect(0, 0, canvasSize.width() - margin, canvasSize.height() - margin)
-        textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.providerName)
+        textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
-        painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.providerName)
+        painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
 
         if debug_mode:
           #painter.fillRect(rect, QColor(240, 240, 240, 200))
-          qDebug("textRect of provider label: " + str(textRect))
+          qDebug("credit text rect: " + str(textRect))
 
     if debug_mode:
       # draw plugin icon
@@ -348,7 +348,9 @@ class TileLayer(QgsPluginLayer):
   def readXml(self, node):
     self.readCustomProperties(node)
     self.layerDef.title = self.customProperty("title", "")
-    self.layerDef.providerName = self.customProperty("providerName", "")
+    self.layerDef.credit = self.customProperty("credit", "")
+    if self.layerDef.credit == "":
+      self.layerDef.credit = self.customProperty("providerName", "")    # for compatibility with 0.11
     self.layerDef.serviceUrl = self.customProperty("serviceUrl", "")
     self.layerDef.yOriginTop = int(self.customProperty("yOriginTop", 1))
     self.layerDef.zmin = int(self.customProperty("zmin", TileDefaultSettings.ZMIN))
@@ -360,7 +362,7 @@ class TileLayer(QgsPluginLayer):
     # layer style
     self.transparency = int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY))
     self.blendingModeName = self.customProperty("blendMode", LayerDefaultSettings.BLENDING_MODE)
-    self.providerNameLabelVisibility = int(self.customProperty("providerNameLabelVisibility", 1))
+    self.creditVisibility = int(self.customProperty("creditVisibility", 1))
     return True
 
   def writeXml(self, node, doc):
@@ -373,7 +375,7 @@ class TileLayer(QgsPluginLayer):
     lines = []
     fmt = u"%s:\t%s"
     lines.append(fmt % (self.tr("Title"), self.layerDef.title))
-    lines.append(fmt % (self.tr("Provider name"), self.layerDef.providerName))
+    lines.append(fmt % (self.tr("Credit"), self.layerDef.credit))
     lines.append(fmt % (self.tr("URL"), self.layerDef.serviceUrl))
     lines.append(fmt % (self.tr("yOrigin"), u"%s (yOriginTop=%d)" % (("Bottom", "Top")[self.layerDef.yOriginTop], self.layerDef.yOriginTop)))
     if self.layerDef.bbox:
@@ -407,6 +409,6 @@ class TileLayerType(QgsPluginLayerType):
     if accepted:
       layer.setTransparency(dialog.ui.spinBox_Transparency.value())
       layer.setBlendingMode(dialog.ui.comboBox_BlendingMode.currentText())
-      layer.setProviderNameLabelVisibility(dialog.ui.checkBox_ProviderNameLabelVisibility.isChecked())
+      layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
       layer.emit(SIGNAL("repaintRequested()"))
     return True

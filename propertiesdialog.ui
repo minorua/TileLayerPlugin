@@ -84,7 +84,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_ProviderNameLabelVisibility">
+         <widget class="QCheckBox" name="checkBox_CreditVisibility">
           <property name="text">
            <string>Place the credit on the bottom right corner</string>
           </property>

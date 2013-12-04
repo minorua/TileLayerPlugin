@@ -100,9 +100,9 @@ class TileLayerPlugin:
       if not accepted:
         return
       self.setCRS()
-      providerNameLabelVisibility = dialog.ui.checkBox_ProviderNameLabelVisibility.isChecked()
+      creditVisibility = dialog.ui.checkBox_CreditVisibility.isChecked()
       for serviceInfo in dialog.selectedServiceInfoList():
-        layer = TileLayer(self, serviceInfo, providerNameLabelVisibility)
+        layer = TileLayer(self, serviceInfo, creditVisibility)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
 

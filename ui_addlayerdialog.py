@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\lenovo\.qgis2\python\developing_plugins\TileLayerPlugin\addlayerdialog.ui'
 #
-# Created: Wed Dec 04 09:22:07 2013
+# Created: Wed Dec 04 09:28:35 2013
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -47,11 +47,11 @@ class Ui_Dialog(object):
         self.toolButton_externalDirectory.setObjectName(_fromUtf8("toolButton_externalDirectory"))
         self.horizontalLayout.addWidget(self.toolButton_externalDirectory)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.checkBox_ProviderNameLabelVisibility = QtGui.QCheckBox(Dialog)
-        self.checkBox_ProviderNameLabelVisibility.setEnabled(True)
-        self.checkBox_ProviderNameLabelVisibility.setChecked(True)
-        self.checkBox_ProviderNameLabelVisibility.setObjectName(_fromUtf8("checkBox_ProviderNameLabelVisibility"))
-        self.verticalLayout.addWidget(self.checkBox_ProviderNameLabelVisibility)
+        self.checkBox_CreditVisibility = QtGui.QCheckBox(Dialog)
+        self.checkBox_CreditVisibility.setEnabled(True)
+        self.checkBox_CreditVisibility.setChecked(True)
+        self.checkBox_CreditVisibility.setObjectName(_fromUtf8("checkBox_CreditVisibility"))
+        self.verticalLayout.addWidget(self.checkBox_CreditVisibility)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -73,7 +73,7 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Add tile layer", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "External layers directory:", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_externalDirectory.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_ProviderNameLabelVisibility.setText(QtGui.QApplication.translate("Dialog", "Place the credit on the bottom right corner", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_CreditVisibility.setText(QtGui.QApplication.translate("Dialog", "Place the credit on the bottom right corner", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Add.setText(QtGui.QApplication.translate("Dialog", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_Close.setText(QtGui.QApplication.translate("Dialog", "Close", None, QtGui.QApplication.UnicodeUTF8))
 

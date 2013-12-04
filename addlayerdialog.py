@@ -79,7 +79,7 @@ class AddLayerDialog(QDialog):
         self.importFromTsv(fileInfo.filePath())
 
   # Line Format is:
-  # title providerName url [yOriginTop [zmin zmax [xmin ymin xmax ymax ]]]
+  # title credit url [yOriginTop [zmin zmax [xmin ymin xmax ymax ]]]
   def importFromTsv(self, filename):
     # append file item
     rootItem = self.model.invisibleRootItem()
@@ -103,20 +103,20 @@ class AddLayerDialog(QDialog):
       try:
         if nvals < 3:
           raise
-        title, providerName, url = vals[0:3]
+        title, credit, url = vals[0:3]
         if nvals < 4:
-          serviceInfo = TileServiceInfo(title, providerName, url)
+          serviceInfo = TileServiceInfo(title, credit, url)
         else:
           yOriginTop = int(vals[3])
           if nvals < 6:
-            serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop)
+            serviceInfo = TileServiceInfo(title, credit, url, yOriginTop)
           else:
             zmin, zmax = map(int, vals[4:6])
             if nvals < 10:
-              serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax)
+              serviceInfo = TileServiceInfo(title, credit, url, yOriginTop, zmin, zmax)
             else:
               bbox = BoundingBox.fromString(",".join(vals[6:10]))
-              serviceInfo = TileServiceInfo(title, providerName, url, yOriginTop, zmin, zmax, bbox)
+              serviceInfo = TileServiceInfo(title, credit, url, yOriginTop, zmin, zmax, bbox)
       except:
         QgsMessageLog.logMessage(self.tr("Invalid line format: {} line {}").format(basename, i + 1), self.tr("TileLayerPlugin"))
         continue
