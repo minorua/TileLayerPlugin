@@ -39,13 +39,6 @@ def degreesToMercatorMeters(lon, lat):
   y = R * math.log(math.tan(math.pi / 4 + (lat * math.pi / 180) / 2))
   return x, y
 
-def degreesToTile(zoom, lon, lat):
-  x, y = degreesToMercatorMeters(lon, lat)
-  size = TileServiceInfo.TSIZE1 / 2 ** (zoom - 1)
-  tx = int((x + TileServiceInfo.TSIZE1) / size)
-  ty = int((TileServiceInfo.TSIZE1 - y) / size)
-  return tx, ty
-
 class BoundingBox:
   def __init__(self, xmin, ymin, xmax, ymax):
     self.xmin = xmin
@@ -65,12 +58,6 @@ class BoundingBox:
   def degreesToMercatorMeters(cls, bbox):
     xmin, ymin = degreesToMercatorMeters(bbox.xmin, bbox.ymin)
     xmax, ymax = degreesToMercatorMeters(bbox.xmax, bbox.ymax)
-    return BoundingBox(xmin, ymin, xmax, ymax)
-
-  @classmethod
-  def degreesToTileRange(cls, zoom, bbox):
-    xmin, ymin = degreesToTile(zoom, bbox.xmin, bbox.ymax)
-    xmax, ymax = degreesToTile(zoom, bbox.xmax, bbox.ymin)
     return BoundingBox(xmin, ymin, xmax, ymax)
 
   @classmethod
@@ -159,6 +146,18 @@ class TileServiceInfo:
   def getMapRect(self, zoom, x, y):
     size = self.TSIZE1 / 2 ** (zoom - 1)
     return QgsRectangle(x * size - self.TSIZE1, self.TSIZE1 - y * size, (x + 1) * size - self.TSIZE1, self.TSIZE1 - (y + 1) * size)
+
+  def degreesToTile(self, zoom, lon, lat):
+    x, y = degreesToMercatorMeters(lon, lat)
+    size = self.TSIZE1 / 2 ** (zoom - 1)
+    tx = int((x + self.TSIZE1) / size)
+    ty = int((self.TSIZE1 - y) / size)
+    return tx, ty
+
+  def bboxDegreesToTileRange(self, zoom, bbox):
+    xmin, ymin = self.degreesToTile(zoom, bbox.xmin, bbox.ymax)
+    xmax, ymax = self.degreesToTile(zoom, bbox.xmax, bbox.ymin)
+    return BoundingBox(xmin, ymin, xmax, ymax)
 
   def __str__(self):
     return "%s (%s)" % (self.title, self.serviceUrl)

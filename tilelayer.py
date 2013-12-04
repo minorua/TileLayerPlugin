@@ -120,7 +120,7 @@ class TileLayer(QgsPluginLayer):
 
     # bounding box limit
     if self.layerDef.bbox:
-      trange = BoundingBox.degreesToTileRange(zoom, self.layerDef.bbox)
+      trange = self.layerDef.bboxDegreesToTileRange(zoom, self.layerDef.bbox)
       ulx = max(ulx, trange.xmin)
       uly = max(uly, trange.ymin)
       lrx = min(lrx, trange.xmax)
