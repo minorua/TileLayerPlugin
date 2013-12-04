@@ -143,7 +143,7 @@ class TileServiceInfo:
       y = (2 ** zoom - 1) - y
     return self.serviceUrl.replace("{z}", str(zoom)).replace("{x}", str(x)).replace("{y}", str(y))
 
-  def getMapRect(self, zoom, x, y):
+  def getTileRect(self, zoom, x, y):
     size = self.TSIZE1 / 2 ** (zoom - 1)
     return QgsRectangle(x * size - self.TSIZE1, self.TSIZE1 - y * size, (x + 1) * size - self.TSIZE1, self.TSIZE1 - (y + 1) * size)
 

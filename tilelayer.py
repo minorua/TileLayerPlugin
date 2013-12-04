@@ -321,7 +321,7 @@ class TileLayer(QgsPluginLayer):
 
   def getTileRect(self, renderContext, zoom, x, y, sdx=1.0, sdy=1.0):
     """ get tile pixel rect in the render context """
-    r = self.layerDef.getMapRect(zoom, x, y)
+    r = self.layerDef.getTileRect(zoom, x, y)
     map2pix = renderContext.mapToPixel()
     topLeft = map2pix.transform(r.xMinimum(), r.yMaximum())
     bottomRight = map2pix.transform(r.xMaximum(), r.yMinimum())
