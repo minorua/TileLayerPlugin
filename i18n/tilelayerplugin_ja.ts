@@ -14,11 +14,6 @@
     </message>
     <message>
         <location filename="../addlayerdialog.py" line="50"/>
-        <source>ProviderName</source>
-        <translation>プロバイダ名</translation>
-    </message>
-    <message>
-        <location filename="../addlayerdialog.py" line="50"/>
         <source>Url</source>
         <translation>URL</translation>
     </message>
@@ -57,6 +52,11 @@
         <source>Invalid line format: {} line {}</source>
         <translation>不正な行フォーマットです: {} line {}</translation>
     </message>
+    <message>
+        <location filename="../addlayerdialog.py" line="50"/>
+        <source>Credit</source>
+        <translation>著作権表記</translation>
+    </message>
 </context>
 <context>
     <name>Dialog</name>
@@ -81,22 +81,22 @@
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="../ui_propertiesdialog.py" line="91"/>
+        <location filename="../ui_propertiesdialog.py" line="99"/>
         <source>Properties</source>
         <translation>プロパティ</translation>
     </message>
     <message>
-        <location filename="../ui_propertiesdialog.py" line="87"/>
+        <location filename="../ui_propertiesdialog.py" line="94"/>
         <source>Style</source>
         <translation>スタイル</translation>
     </message>
     <message>
-        <location filename="../ui_propertiesdialog.py" line="88"/>
+        <location filename="../ui_propertiesdialog.py" line="95"/>
         <source>Transparency</source>
         <translation>透過度</translation>
     </message>
     <message>
-        <location filename="../ui_propertiesdialog.py" line="89"/>
+        <location filename="../ui_propertiesdialog.py" line="96"/>
         <source>Blending mode</source>
         <translation>混合モード</translation>
     </message>
@@ -106,9 +106,14 @@
         <translation>外部レイヤ情報ディレクトリ:</translation>
     </message>
     <message>
-        <location filename="../ui_propertiesdialog.py" line="90"/>
-        <source>Place provider name label on the bottom right</source>
-        <translation>右下にプロバイダ名を表示する</translation>
+        <location filename="../ui_propertiesdialog.py" line="98"/>
+        <source>Place the credit on the bottom right corner</source>
+        <translation>右下にクレジット(著作権表記)を表示する</translation>
+    </message>
+    <message>
+        <location filename="../ui_propertiesdialog.py" line="97"/>
+        <source>(Default: SourceOver)</source>
+        <translation>(既定値: SourceOver)</translation>
     </message>
 </context>
 <context>
@@ -137,37 +142,32 @@
         <translation> {}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="375"/>
+        <location filename="../tilelayer.py" line="377"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="376"/>
-        <source>Provider name</source>
-        <translation>プロバイダ名</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="377"/>
+        <location filename="../tilelayer.py" line="379"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="378"/>
+        <location filename="../tilelayer.py" line="380"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="382"/>
+        <location filename="../tilelayer.py" line="384"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="383"/>
+        <location filename="../tilelayer.py" line="385"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="384"/>
+        <location filename="../tilelayer.py" line="386"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
@@ -196,6 +196,11 @@
         <source>TileLayer is available in EPSG:3857</source>
         <translation>タイルレイヤはEPSG:3857で利用可能です</translation>
     </message>
+    <message>
+        <location filename="../tilelayer.py" line="378"/>
+        <source>Credit</source>
+        <translation>著作権表記</translation>
+    </message>
 </context>
 <context>
     <name>TileLayerPlugin</name>
@@ -211,8 +216,8 @@
     </message>
     <message>
         <location filename="../tilelayerplugin.py" line="64"/>
-        <source>Settings</source>
-        <translation>設定</translation>
+        <source>Settings...</source>
+        <translation>設定...</translation>
     </message>
 </context>
 </TS>

@@ -62,7 +62,7 @@ class TileLayerPlugin:
             QIcon(":/plugins/tilelayerplugin/icon.png"),
             QCoreApplication.translate("TileLayerPlugin", "Add Tile Layer..."), self.iface.mainWindow())
         self.actionSettings = QAction(
-            QCoreApplication.translate("TileLayerPlugin", "Settings"), self.iface.mainWindow())
+            QCoreApplication.translate("TileLayerPlugin", "Settings..."), self.iface.mainWindow())
 
         # connect the action to the run method
         self.action.triggered.connect(self.run)

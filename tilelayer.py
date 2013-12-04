@@ -93,7 +93,7 @@ class TileLayer(QgsPluginLayer):
       return True
 
     painter = renderContext.painter()
-    if not self.isCurrentCrsSupported(renderContext):
+    if not self.isCurrentCrsSupported():
       if self.plugin.navigationMessagesEnabled:
         msg = self.tr("TileLayer is available in EPSG:3857")
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
@@ -329,7 +329,7 @@ class TileLayer(QgsPluginLayer):
     #return QRectF(QPointF(round(topLeft.x()), round(topLeft.y())), QPointF(round(bottomRight.x()), round(bottomRight.y())))
     #return QgsRectangle(topLeft, bottomRight)
 
-  def isCurrentCrsSupported(self, renderContext):
+  def isCurrentCrsSupported(self):
     srsid = self.iface.mapCanvas().mapRenderer().destinationCrs().srsid()
     if srsid == 3857:   # or srsid == 900913:
       return True
