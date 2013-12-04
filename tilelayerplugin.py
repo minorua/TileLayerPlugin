@@ -57,25 +57,28 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
 
     def initGui(self):
-        # Create action that will start plugin configuration
+        # Create actions
         self.action = QAction(
             QIcon(":/plugins/tilelayerplugin/icon.png"),
             QCoreApplication.translate("TileLayerPlugin", "Add Tile Layer..."), self.iface.mainWindow())
         self.actionSettings = QAction(
             QCoreApplication.translate("TileLayerPlugin", "Settings..."), self.iface.mainWindow())
 
-        # connect the action to the run method
+        # set object name
+        self.action.setObjectName("TileLayerPlugin_AddLayer")
+        self.actionSettings.setObjectName("TileLayerPlugin_Settings")
+
+        # connect the actions to the methods
         self.action.triggered.connect(self.run)
         self.actionSettings.triggered.connect(self.settings)
 
         # Add toolbar button and menu item
-        self.iface.insertAddLayerAction(self.action)
-        self.iface.layerToolBar().addAction(self.action)
-        if debug_mode:
-          self.iface.addToolBarIcon(self.action)
+        self.iface.addToolBarIcon(self.action)
+        self.iface.addPluginToMenu(self.pluginName, self.action)
         self.iface.addPluginToMenu(self.pluginName, self.actionSettings)
+        #self.iface.layerToolBar().addAction(self.action)
+        #self.iface.insertAddLayerAction(self.action)
         #self.iface.newLayerMenu().addAction(self.action)
-        #self.iface.addPluginToMenu(u"&TileLayer Plugin", self.action)
 
         # Register plugin layer type
         self.tileLayerType = TileLayerType(self)
@@ -83,11 +86,12 @@ class TileLayerPlugin:
 
     def unload(self):
         # Remove the plugin menu item and icon
-        self.iface.removeAddLayerAction(self.action)
-        self.iface.layerToolBar().removeAction(self.action)
-        if debug_mode:
-          self.iface.removeToolBarIcon(self.action)
+        self.iface.removeToolBarIcon(self.action)
+        self.iface.removePluginMenu(self.pluginName, self.action)
         self.iface.removePluginMenu(self.pluginName, self.actionSettings)
+        #self.iface.layerToolBar().removeAction(self.action)
+        #self.iface.removeAddLayerAction(self.action)
+        #self.iface.newLayerMenu().removeAction(self.action)
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
