@@ -1,6 +1,6 @@
 # TileLayerPlugin
 
-TileLayerPlugin is a QGIS plugin to view tile maps.
+TileLayerPlugin is a QGIS plugin to view Pseudo Mercator projected tile maps.
 
 ## How to use?
 
@@ -9,29 +9,29 @@ After installing this plugin, you can add tile layers into map canvas from the l
 A few layer styles can be changed in the layer properties dialog. You can set sufficient cache size (in kilobytes) in the Network/Cache Settings of the Options dialog in order to make effective use of cache.
 
 ### Limitations
-With this plugin, you can view only Web Mercator projected tile maps. Tile layers don't appear when the coordinate reference system is not EPSG:3857.
+With this plugin, you can view only **WGS 84 / Pseudo Mercator** projected tile maps. Tile layers don't appear when the coordinate reference system is not **EPSG:3857**.
 
 ### Layer information file format
 Layer information file is a text file. Each line has information for a tile layer. Fields are separated with tab character. The file extension is **tsv** and the file encoding is UTF-8.
 
 **Line format is:**  
-`title  providerName  url  yOriginTop  zmin  zmax  xmin  ymin  xmax  ymax`
+`title  credit  url  yOriginTop  zmin  zmax  xmin  ymin  xmax  ymax`
 
 **Description of fields:**  
 Required
 * title: Layer title
-* providerName: Service provider name
-* url: URL of tile map. Special strings "{x}", "{y}" and "{z}" are replaced with tile coordinates and zoom level that are calculated with current map view.
+* credit: Credit specified by tile map service provider.
+* url: URL of tile map. Special strings "{x}", "{y}" and "{z}" will be replaced with tile coordinates and zoom level that are calculated with current map view.
 
 Options
 * yOriginTop: Origin location of tile matrix. 1 if origin is top (Google Maps compatible), 0 if origin is bottom (TMS). Default is 1.
 * zmin, zmax: Minimum/Maximum value of zoom level. Default values: zmin=10, zmax=15.
-* xmin, ymin, xmax, ymax: Layer extent in degrees (longitude/latitude). Note: Valid range of y in web mercator is from about -85.05 to about 85.05.
+* xmin, ymin, xmax, ymax: Layer extent in degrees (longitude/latitude). Note: Valid range of y in Pseudo Mercator projection is from about -85.05 to about 85.05.
 
 You should correctly set zmin, zmax, xmin, ymin, xmax and ymax in order not to send unnecessary requests to tile map servers.
 
 ### Examples of layer information file
-* **For a tile map provided by a HTTP server that you may access to**  
+* **For a tile map provided by a HTTP server that you may access**  
 freetilemap.tsv  
 `RoadMap	FreeTileMap	http://freetilemap.example.com/road/{z}/{x}/{y}.png	1	0	19`
 
@@ -40,6 +40,11 @@ slope.tsv
 `slope	local	file:///d:/tilemaps/slope/{z}/{x}/{y}.png	0	6	13	130.5	33.6	135.0	36.0`
 
 Note: Use tab character to separate fields!
+
+## ChangeLog
+version 0.20  
+* Layer information file extension is limited to tsv.
+* providerName field is renamed to credit, and so on.
 
 ## License
 TileLayerPlugin is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.

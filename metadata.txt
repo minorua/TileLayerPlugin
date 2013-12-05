@@ -11,8 +11,8 @@
 [general]
 name=TileLayer Plugin
 qgisMinimumVersion=2.0
-description=It's easy to add tile maps onto your map canvas! You can view Web Mercator projected tile maps with this plugin.
-version=0.112
+description=It's easy to add tile maps onto your map canvas! With this plugin, you can view Pseudo Mercator projected tile maps.
+version=0.20
 author=Minoru Akagi
 email=akaginch@gmail.com
 
