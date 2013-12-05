@@ -84,22 +84,16 @@ class Tiles:
     self.TSIZE1 = serviceInfo.TSIZE1
     self.yOriginTop = serviceInfo.yOriginTop
     self.serviceInfo = serviceInfo
-
     self.tiles = {}
-    self.cachedImage = None
 
   def addTile(self, url, tile):
     self.tiles[url] = tile
-    self.cachedImage = None
 
   def setImageData(self, url, data):
     if url in self.tiles:
       self.tiles[url].data = data
-    self.cachedImage = None
 
   def image(self):
-    if self.cachedImage:
-      return self.cachedImage
     width = (self.xmax - self.xmin + 1) * self.TILE_SIZE
     height = (self.ymax - self.ymin + 1) * self.TILE_SIZE
     image = QImage(width, height, QImage.Format_ARGB32_Premultiplied)
@@ -115,7 +109,6 @@ class Tiles:
       timg = QImage()
       timg.loadFromData(tile.data)
       p.drawImage(rect, timg)
-    self.cachedImage = image
     return image
 
   def extent(self):
