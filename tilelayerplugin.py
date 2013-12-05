@@ -8,11 +8,8 @@
         begin                : 2012-12-16
         copyright            : (C) 2013 by Minoru Akagi
         email                : akaginch@gmail.com
-
- Partly based on openlayers_plugin.py
-        copyright            : (C) 2009 by Pirmin Kalberer, Sourcepole
  ***************************************************************************/
- 
+
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -118,15 +115,23 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
 
     def setCRS(self):
-      crs = QgsCoordinateReferenceSystem("EPSG:3857")
       mapCanvas = self.iface.mapCanvas()
       currentCrs = mapCanvas.mapRenderer().destinationCrs()
-      if currentCrs == crs:
+      pseudo_mercator = QgsCoordinateReferenceSystem(3857)
+      if currentCrs == pseudo_mercator:
         return
-      mapCanvas.mapRenderer().setProjectionsEnabled(True) 
-      trans = QgsCoordinateTransform(currentCrs, crs)
+      # calculate extent in Pseudo Mercator
+      trans = QgsCoordinateTransform(currentCrs, pseudo_mercator)
       extent = trans.transform(mapCanvas.extent(), QgsCoordinateTransform.ForwardTransform)
-      mapCanvas.mapRenderer().setDestinationCrs(crs)
-      mapCanvas.freeze(False)   #
-      mapCanvas.setMapUnits(crs.mapUnits())   #
+
+      # enable "on the fly"
+      mapCanvas.mapRenderer().setProjectionsEnabled(True)
+
+      # set crs
+      mapCanvas.freeze()
+      mapCanvas.mapRenderer().setDestinationCrs(pseudo_mercator)
+      mapCanvas.setMapUnits(pseudo_mercator.mapUnits())
+      mapCanvas.freeze(False)
+
+      # set extent
       mapCanvas.setExtent(extent)

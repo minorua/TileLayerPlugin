@@ -60,7 +60,7 @@ class TileLayer(QgsPluginLayer):
       self.setCustomProperty("bbox", layerDef.bbox.toString())
     self.setCustomProperty("creditVisibility", self.creditVisibility)
 
-    crs = QgsCoordinateReferenceSystem("EPSG:3857")
+    crs = QgsCoordinateReferenceSystem(3857)
     self.setCrs(crs)
     if layerDef.bbox:
       self.setExtent(BoundingBox.degreesToMercatorMeters(layerDef.bbox).toQgsRectangle())
@@ -339,8 +339,7 @@ class TileLayer(QgsPluginLayer):
     #return QgsRectangle(topLeft, bottomRight)
 
   def isCurrentCrsSupported(self):
-    srsid = self.iface.mapCanvas().mapRenderer().destinationCrs().srsid()
-    if srsid == 3857:   # or srsid == 900913:
+    if self.iface.mapCanvas().mapRenderer().destinationCrs().postgisSrid() == 3857:
       return True
     return False
 
