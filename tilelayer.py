@@ -369,8 +369,8 @@ class TileLayer(QgsPluginLayer):
       self.layerDef.bbox = BoundingBox.fromString(bbox)
       self.setExtent(BoundingBox.degreesToMercatorMeters(self.layerDef.bbox).toQgsRectangle())
     # layer style
-    self.transparency = int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY))
-    self.blendingModeName = self.customProperty("blendMode", LayerDefaultSettings.BLENDING_MODE)
+    self.setTransparency(int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY)))
+    self.setBlendingMode(self.customProperty("blendMode", LayerDefaultSettings.BLENDING_MODE))
     self.creditVisibility = int(self.customProperty("creditVisibility", 1))
     return True
 
