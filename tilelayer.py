@@ -39,7 +39,7 @@ class LayerDefaultSettings:
 class TileLayer(QgsPluginLayer):
 
   LAYER_TYPE = "TileLayer"
-  MAX_TILE_COUNT = 100
+  MAX_TILE_COUNT = 256
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
   def __init__(self, plugin, layerDef, creditVisibility=1):
@@ -136,6 +136,13 @@ class TileLayer(QgsPluginLayer):
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
+    # tile count limit
+    tileCount = (lrx - ulx + 1) * (lry - uly + 1)
+    if tileCount > self.MAX_TILE_COUNT:
+      msg = self.tr("Tile count is over limit ({0}, max={1})").format(tileCount, self.MAX_TILE_COUNT)
+      self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
+      return True
+
     # save painter state
     painter.save()
 
@@ -170,11 +177,6 @@ class TileLayer(QgsPluginLayer):
           tiles.addTile(url, Tile(zoom, tx, ty, data))
           if data is None:
             urls.append(url)
-
-      if len(urls) > self.MAX_TILE_COUNT:
-        msg = self.tr("Tile count is over limit ({0}, max={1})").format(len(urls), self.MAX_TILE_COUNT)
-        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
-        return True
 
       self.tiles = tiles
       # download tile data
