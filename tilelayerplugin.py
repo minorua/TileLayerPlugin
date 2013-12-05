@@ -98,10 +98,14 @@ class TileLayerPlugin:
       accepted = dialog.exec_()
       if not accepted:
         return
-      self.setCRS()
+
+      # change crs to EPSG:3857 (WGS 84 / Pseudo-Mercator)
+      pseudo_mercator = QgsCoordinateReferenceSystem(3857)
+      self.setCrs(pseudo_mercator)
+
       creditVisibility = dialog.ui.checkBox_CreditVisibility.isChecked()
       for serviceInfo in dialog.selectedServiceInfoList():
-        layer = TileLayer(self, serviceInfo, creditVisibility)
+        layer = TileLayer(self, serviceInfo, creditVisibility, pseudo_mercator)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
 
@@ -114,14 +118,13 @@ class TileLayerPlugin:
         self.downloadTimeout = dialog.ui.spinBox_downloadTimeout.value()
         self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
 
-    def setCRS(self):
+    def setCrs(self, crs):
       mapCanvas = self.iface.mapCanvas()
       currentCrs = mapCanvas.mapRenderer().destinationCrs()
-      pseudo_mercator = QgsCoordinateReferenceSystem(3857)
-      if currentCrs == pseudo_mercator:
+      if currentCrs == crs:
         return
-      # calculate extent in Pseudo Mercator
-      trans = QgsCoordinateTransform(currentCrs, pseudo_mercator)
+      # calculate extent in target crs
+      trans = QgsCoordinateTransform(currentCrs, crs)
       extent = trans.transform(mapCanvas.extent(), QgsCoordinateTransform.ForwardTransform)
 
       # enable "on the fly"
@@ -129,8 +132,9 @@ class TileLayerPlugin:
 
       # set crs
       mapCanvas.freeze()
-      mapCanvas.mapRenderer().setDestinationCrs(pseudo_mercator)
-      mapCanvas.setMapUnits(pseudo_mercator.mapUnits())
+      mapCanvas.mapRenderer().setDestinationCrs(crs)
+      if crs.mapUnits() != QGis.UnknownUnit:
+        mapCanvas.setMapUnits(crs.mapUnits())
       mapCanvas.freeze(False)
 
       # set extent

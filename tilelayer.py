@@ -42,7 +42,7 @@ class TileLayer(QgsPluginLayer):
   MAX_TILE_COUNT = 256
   RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
-  def __init__(self, plugin, layerDef, creditVisibility=1):
+  def __init__(self, plugin, layerDef, creditVisibility=1, pseudo_mercator=None):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.plugin = plugin
     self.iface = plugin.iface
@@ -60,8 +60,9 @@ class TileLayer(QgsPluginLayer):
       self.setCustomProperty("bbox", layerDef.bbox.toString())
     self.setCustomProperty("creditVisibility", self.creditVisibility)
 
-    crs = QgsCoordinateReferenceSystem(3857)
-    self.setCrs(crs)
+    if pseudo_mercator is None:
+      pseudo_mercator = QgsCoordinateReferenceSystem(3857)
+    self.setCrs(pseudo_mercator)
     if layerDef.bbox:
       self.setExtent(BoundingBox.degreesToMercatorMeters(layerDef.bbox).toQgsRectangle())
     else:
