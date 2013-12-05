@@ -1,5 +1,6 @@
 FORMS = ../addlayerdialog.ui \
-../propertiesdialog.ui
+../propertiesdialog.ui \
+../settingsdialog.ui
 
 SOURCES = ../tilelayerplugin.py \
 ../tilelayer.py \
@@ -7,6 +8,7 @@ SOURCES = ../tilelayerplugin.py \
 ../propertiesdialog.py \
 ../ui_addlayerdialog.py \
 ../ui_propertiesdialog.py \
+../ui_settingsdialog.py \
 ../downloader.py
 
 TRANSLATIONS = tilelayerplugin_ja.ts
