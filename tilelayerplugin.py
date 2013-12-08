@@ -123,10 +123,6 @@ class TileLayerPlugin:
       currentCrs = mapCanvas.mapRenderer().destinationCrs()
       if currentCrs == crs:
         return
-      # calculate extent in target crs
-      trans = QgsCoordinateTransform(currentCrs, crs)
-      extent = trans.transform(mapCanvas.extent(), QgsCoordinateTransform.ForwardTransform)
-
       # enable "on the fly"
       mapCanvas.mapRenderer().setProjectionsEnabled(True)
 
@@ -136,6 +132,3 @@ class TileLayerPlugin:
       if crs.mapUnits() != QGis.UnknownUnit:
         mapCanvas.setMapUnits(crs.mapUnits())
       mapCanvas.freeze(False)
-
-      # set extent
-      mapCanvas.setExtent(extent)
