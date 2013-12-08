@@ -4,7 +4,7 @@ TileLayerPlugin is a QGIS plugin to view Pseudo Mercator projected tile maps.
 
 ## How to use?
 
-After installing this plugin, you can add tile layers into map canvas from the layer menu or the manage layers toolbar. Before adding layer information by yourself, you can use only tile frame layers. You can add available layers by writing a file in the format described below and setting the folder that the file exists as external layer directory.
+After installing this plugin, you can add tile layers onto your map canvas from the layer menu or the manage layers toolbar. Before adding layer information by yourself, you can use only tile frame layers. You can add available layers by writing a file in the format described below and setting the folder that the file exists as external layer directory.
 
 A few layer styles can be changed in the layer properties dialog. You can set sufficient cache size (in kilobytes) in the Network/Cache Settings of the Options dialog in order to make effective use of cache.
 
@@ -24,7 +24,7 @@ Required
 * url: URL of tile map. Special strings "{x}", "{y}" and "{z}" will be replaced with tile coordinates and zoom level that are calculated with current map view.
 
 Options
-* yOriginTop: Origin location of tile matrix. 1 if origin is top (Google Maps compatible), 0 if origin is bottom (TMS). Default is 1.
+* yOriginTop: Origin location of tile matrix. 1 if origin is top-left (Google Maps compatible), 0 if origin is bottom-left (TMS). Default is 1.
 * zmin, zmax: Minimum/Maximum value of zoom level. Default values: zmin=10, zmax=15.
 * xmin, ymin, xmax, ymax: Layer extent in degrees (longitude/latitude). Note: Valid range of y in Pseudo Mercator projection is from about -85.05 to about 85.05.
 
