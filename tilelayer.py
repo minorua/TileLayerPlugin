@@ -169,6 +169,7 @@ class TileLayer(QgsPluginLayer):
       # create Tiles class object and throw url into it
       tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
       urls = []
+      cacheHits = 0
       for ty in range(uly, lry + 1):
         for tx in range(ulx, lrx + 1):
           data = None
@@ -178,6 +179,8 @@ class TileLayer(QgsPluginLayer):
           tiles.addTile(url, Tile(zoom, tx, ty, data))
           if data is None:
             urls.append(url)
+          else:
+            cacheHits += 1
 
       self.tiles = tiles
       # download tile data
@@ -187,8 +190,8 @@ class TileLayer(QgsPluginLayer):
           self.tiles.setImageData(url, files[url])
 
         if self.iface:
-          cacheHits = self.downloader.cacheHits
-          downloadedCount = self.downloader.fetchSuccesses - cacheHits
+          cacheHits += self.downloader.cacheHits
+          downloadedCount = self.downloader.fetchSuccesses - self.downloader.cacheHits
           msg = self.tr("{0} files downloaded. {1} caches hit.").format(downloadedCount, cacheHits)
           barmsg = None
           if self.downloader.errorStatus != Downloader.NO_ERROR:
