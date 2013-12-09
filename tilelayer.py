@@ -73,6 +73,7 @@ class TileLayer(QgsPluginLayer):
     self.setBlendingMode(LayerDefaultSettings.BLENDING_MODE)
 
     self.downloader = Downloader(self)
+    self.downloader.DEFAULT_CACHE_EXPIRATION = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
     QObject.connect(self.downloader, SIGNAL("replyFinished(QString, int, int)"), self.networkReplyFinished)
 
   def setBlendingMode(self, modeName):

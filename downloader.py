@@ -30,6 +30,7 @@ debug_mode = 1
 class Downloader(QObject):
 
   MAX_CONNECTION = 2
+  DEFAULT_CACHE_EXPIRATION = 24   # hours
 
   NO_ERROR = 0
   TIMEOUT_ERROR = 4
@@ -67,7 +68,7 @@ class Downloader(QObject):
 
   def replyFinished(self):
     reply = self.sender()
-    url = reply.url().toString()
+    url = reply.request().url().toString()
     self.log("replyFinished: %s" % url)
     if self.async and not url in self.fetchedFiles:
       self.fetchedFiles[url] = None
@@ -80,10 +81,19 @@ class Downloader(QObject):
       if reply.attribute(QNetworkRequest.SourceIsFromCacheAttribute):
         self.cacheHits += 1
         isFromCache = 1
+      elif not reply.hasRawHeader("Cache-Control"):
+        cache = QgsNetworkAccessManager.instance().cache()
+        if cache:
+          metadata = cache.metaData(reply.request().url())
+          #self.log("Expiration date: " + metadata.expirationDate().toString().encode("utf-8"))
+          if metadata.expirationDate().isNull():
+            metadata.setExpirationDate(QDateTime.currentDateTime().addSecs(self.DEFAULT_CACHE_EXPIRATION * 60 * 60))
+            cache.updateMetaData(metadata)
+            self.log("Default expiration date has been set: %s (%d h)" % (url, self.DEFAULT_CACHE_EXPIRATION))
 
       if reply.isReadable():
-        data = reply.readAll()
         if self.async:
+          data = reply.readAll()
           self.fetchedFiles[url] = data
       else:
         if httpStatusCode is not None:
