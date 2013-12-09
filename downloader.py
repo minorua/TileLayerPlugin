@@ -32,6 +32,8 @@ class Downloader(QObject):
   MAX_CONNECTION = 2
   DEFAULT_CACHE_EXPIRATION = 24   # hours
 
+  NOT_FOUND = 0
+
   NO_ERROR = 0
   TIMEOUT_ERROR = 4
   UNKNOWN_ERROR = -1
@@ -75,8 +77,8 @@ class Downloader(QObject):
     self.requestingUrls.remove(url)
     self.replies.remove(reply)
     isFromCache = 0
+    httpStatusCode = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
     if reply.error() == QNetworkReply.NoError:
-      httpStatusCode = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
       self.fetchSuccesses += 1
       if reply.attribute(QNetworkRequest.SourceIsFromCacheAttribute):
         self.cacheHits += 1
@@ -96,9 +98,10 @@ class Downloader(QObject):
           data = reply.readAll()
           self.fetchedFiles[url] = data
       else:
-        if httpStatusCode is not None:
-          qDebug("http status code: %d" % httpStatusCode)
+        qDebug("http status code: " + str(httpStatusCode))
     else:
+      if self.async and httpStatusCode == 404:
+        self.fetchedFiles[url] = self.NOT_FOUND
       self.fetchErrors += 1
       if self.errorStatus == self.NO_ERROR:
         self.errorStatus = self.UNKNOWN_ERROR

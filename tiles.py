@@ -99,7 +99,7 @@ class Tiles:
     image = QImage(width, height, QImage.Format_ARGB32_Premultiplied)
     p = QPainter(image)
     for tile in self.tiles.values():
-      if tile.data is None:
+      if not tile.data:
         continue
 
       x = tile.x - self.xmin

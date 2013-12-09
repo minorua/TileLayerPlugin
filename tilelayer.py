@@ -176,12 +176,13 @@ class TileLayer(QgsPluginLayer):
           data = None
           url = self.layerDef.tileUrl(zoom, tx, ty)
           if self.tiles and zoom == self.tiles.zoom and url in self.tiles.tiles:
-            data = self.tiles.tiles[url].data   # use last fetched image if exists
+            data = self.tiles.tiles[url].data
           tiles.addTile(url, Tile(zoom, tx, ty, data))
           if data is None:
             urls.append(url)
-          else:
+          elif data:      # memory cache exists
             cacheHits += 1
+          #else:    # tile was not found (Downloader.NOT_FOUND=0)
 
       self.tiles = tiles
       # download tile data
@@ -264,7 +265,7 @@ class TileLayer(QgsPluginLayer):
     for url, tile in tiles.tiles.items():
       self.log("Draw tile: zoom: %d, x:%d, y:%d, data:%s" % (tile.zoom, tile.x, tile.y, str(tile.data)))
       rect = self.getTileRect(renderContext, tile.zoom, tile.x, tile.y, sdx, sdy)
-      if tile.data is not None:
+      if tile.data:
         image = QImage()
         image.loadFromData(tile.data)
         p.drawImage(rect, image)
