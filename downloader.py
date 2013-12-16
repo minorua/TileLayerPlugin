@@ -45,7 +45,7 @@ class Downloader(QObject):
     self.replies = []
 
     self.eventLoop = QEventLoop()
-    self.async = False
+    self.sync = False
     self.fetchedFiles = {}
     self.clearCounts()
 
@@ -72,7 +72,7 @@ class Downloader(QObject):
     reply = self.sender()
     url = reply.request().url().toString()
     self.log("replyFinished: %s" % url)
-    if self.async and not url in self.fetchedFiles:
+    if self.sync and not url in self.fetchedFiles:
       self.fetchedFiles[url] = None
     self.requestingUrls.remove(url)
     self.replies.remove(reply)
@@ -94,13 +94,13 @@ class Downloader(QObject):
             self.log("Default expiration date has been set: %s (%d h)" % (url, self.DEFAULT_CACHE_EXPIRATION))
 
       if reply.isReadable():
-        if self.async:
+        if self.sync:
           data = reply.readAll()
           self.fetchedFiles[url] = data
       else:
         qDebug("http status code: " + str(httpStatusCode))
     else:
-      if self.async and httpStatusCode == 404:
+      if self.sync and httpStatusCode == 404:
         self.fetchedFiles[url] = self.NOT_FOUND
       self.fetchErrors += 1
       if self.errorStatus == self.NO_ERROR:
@@ -109,7 +109,7 @@ class Downloader(QObject):
     self.emit(SIGNAL('replyFinished(QString, int, int)'), url, reply.error(), isFromCache)
     reply.deleteLater()
 
-    if self.async and len(self.queue) + len(self.requestingUrls) == 0:
+    if self.sync and len(self.queue) + len(self.requestingUrls) == 0:
       self.log("eventLoop.quit()")
       self.eventLoop.quit()
 
@@ -131,9 +131,9 @@ class Downloader(QObject):
     self.replies.append(reply)
     return reply
 
-  def fetchFilesAsync(self, urlList, timeoutSec=0):
-    self.log("fetchFilesAsync()")
-    self.async = True
+  def fetchFiles(self, urlList, timeoutSec=0):
+    self.log("fetchFiles()")
+    self.sync = True
     self.queue = []
     self.clearCounts()
     self.errorStatus = Downloader.NO_ERROR
@@ -153,7 +153,7 @@ class Downloader(QObject):
       self.timer.start()
     self.log("eventLoop.exec_()")
     self.eventLoop.exec_()
-    self.log("fetchFilesAsnc() End: %d" % self.errorStatus)
+    self.log("fetchFiles() End: %d" % self.errorStatus)
     if timeoutSec > 0:
       self.timer.stop()
     return self.fetchedFiles
@@ -186,13 +186,13 @@ class Downloader(QObject):
     self.requestingUrls = []
 
   def fetch(self, url):
-    self.async = False
+    self.sync = False
     if not url in self.queue:
       self.queue.append(url)
     self.fetchNext()
 
-  def fetchFiles(self, urlList):
-    self.async = False
+  def fetchFilesAsync(self, urlList):
+    self.sync = False
     for url in urlList:
       if not url in self.queue:
         self.queue.append(url)

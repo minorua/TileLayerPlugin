@@ -187,7 +187,7 @@ class TileLayer(QgsPluginLayer):
       self.tiles = tiles
       # download tile data
       if len(urls) > 0:
-        files = self.downloader.fetchFilesAsync(urls, self.plugin.downloadTimeout)
+        files = self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
         for url in files.keys():
           self.tiles.setImageData(url, files[url])
 
