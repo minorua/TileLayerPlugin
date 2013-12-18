@@ -56,6 +56,7 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
 
         self.layers = {}
+        QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerRemoved(QString)"), self.layerRemoved)
 
     def initGui(self):
         # Create actions
@@ -94,6 +95,14 @@ class TileLayerPlugin:
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
+
+        QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerRemoved(QString)"), self.layerRemoved)
+
+    def layerRemoved(self, layerId):
+      if layerId in self.layers:
+        del self.layers[layerId]
+        if debug_mode:
+          qDebug("Layer %s removed" % layerId.encode("UTF-8"))
 
     def run(self):
       from addlayerdialog import AddLayerDialog
