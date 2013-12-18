@@ -4,7 +4,7 @@ TileLayerPlugin is a QGIS plugin to view Pseudo Mercator projected tile maps.
 
 ## How to use?
 
-After installing this plugin, you can add tile layers onto your map canvas from the layer menu or the manage layers toolbar. Before adding layer information by yourself, you can use only tile frame layers. You can add available layers by writing a file in the format described below and setting the folder that the file exists as external layer directory.
+After installing this plugin, you can add tile layers onto your map canvas from the layer menu or the manage layers toolbar. Only tile frame layers are listed until you add layer information by yourself. You can add available layers by writing a file in the format described below and setting the folder that the file exists as external layer directory.
 
 A few layer styles can be changed in the layer properties dialog. You can set sufficient cache size (in kilobytes) in the Network/Cache Settings of the Options dialog in order to make effective use of cache.
 
