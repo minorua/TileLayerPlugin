@@ -38,7 +38,7 @@ class PropertiesDialog(QDialog):
 
     self.ui.textEdit_Properties.setText(layer.metadata())
     self.ui.spinBox_Transparency.setValue(layer.transparency)
-    i = self.ui.comboBox_BlendingMode.findText(layer.blendingModeName)
+    i = self.ui.comboBox_BlendingMode.findText(layer.blendModeName)
     if i != -1:
       self.ui.comboBox_BlendingMode.setCurrentIndex(i)
     self.ui.checkBox_CreditVisibility.setChecked(layer.creditVisibility)

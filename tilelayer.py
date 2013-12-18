@@ -35,7 +35,7 @@ debug_mode = 1
 class LayerDefaultSettings:
 
   TRANSPARENCY = 0
-  BLENDING_MODE = "SourceOver"
+  BLEND_MODE = "SourceOver"
 
 class TileLayer(QgsPluginLayer):
 
@@ -71,7 +71,7 @@ class TileLayer(QgsPluginLayer):
     self.setValid(True)
     self.tiles = None
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
-    self.setBlendingMode(LayerDefaultSettings.BLENDING_MODE)
+    self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
 
     self.downloader = Downloader(self)
     self.downloader.DEFAULT_CACHE_EXPIRATION = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
@@ -85,9 +85,10 @@ class TileLayer(QgsPluginLayer):
       QObject.connect(self, SIGNAL("showMessage(QString, int)"), self.showStatusMessageSlot)
       QObject.connect(self, SIGNAL("showBarMessage(QString, QString, int, int)"), self.showBarMessageSlot)
 
-  def setBlendingMode(self, modeName):
-    self.blendingModeName = modeName
-    self.blendingMode = getattr(QPainter, "CompositionMode_" + modeName, 0)
+  def setBlendModeByName(self, modeName):
+    self.blendModeName = modeName
+    blendMode = getattr(QPainter, "CompositionMode_" + modeName, 0)
+    self.setBlendMode(blendMode)
     self.setCustomProperty("blendMode", modeName)
 
   def setTransparency(self, transparency):
@@ -297,17 +298,14 @@ class TileLayer(QgsPluginLayer):
     if self.RENDER_HINT is not None:
       oldRenderHints = painter.renderHints()
       painter.setRenderHint(self.RENDER_HINT, True)
-    oldCompositionMode = painter.compositionMode()
-    painter.setCompositionMode(self.blendingMode)
     oldOpacity = painter.opacity()
     painter.setOpacity(0.01 * (100 - self.transparency))
-    return [oldRenderHints, oldCompositionMode, oldOpacity]
+    return [oldRenderHints, oldOpacity]
 
   def restoreStyle(self, painter, oldStyles):
     if self.RENDER_HINT is not None:
       painter.setRenderHints(oldStyles[0])
-    painter.setCompositionMode(oldStyles[1])
-    painter.setOpacity(oldStyles[2])
+    painter.setOpacity(oldStyles[1])
 
   def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy):
     if "frame" in self.layerDef.serviceUrl:
@@ -401,7 +399,7 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(BoundingBox.degreesToMercatorMeters(self.layerDef.bbox).toQgsRectangle())
     # layer style
     self.setTransparency(int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY)))
-    self.setBlendingMode(self.customProperty("blendMode", LayerDefaultSettings.BLENDING_MODE))
+    self.setBlendModeByName(self.customProperty("blendMode", LayerDefaultSettings.BLEND_MODE))
     self.creditVisibility = int(self.customProperty("creditVisibility", 1))
     return True
 
@@ -521,7 +519,7 @@ class TileLayerType(QgsPluginLayerType):
     accepted = dialog.exec_()
     if accepted:
       layer.setTransparency(dialog.ui.spinBox_Transparency.value())
-      layer.setBlendingMode(dialog.ui.comboBox_BlendingMode.currentText())
+      layer.setBlendModeByName(dialog.ui.comboBox_BlendingMode.currentText())
       layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
       layer.emit(SIGNAL("repaintRequested()"))
     return True
