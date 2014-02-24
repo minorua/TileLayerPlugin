@@ -101,7 +101,8 @@ class TileLayer(QgsPluginLayer):
         self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
       return True
 
-    isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == self.iface.mapCanvas().mapRenderer().outputDpi()
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
+    isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == mapSettings.outputDpi()
     if isDpiEqualToCanvas:
       # calculate zoom level
       mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
@@ -318,6 +319,7 @@ class TileLayer(QgsPluginLayer):
         self.drawNumber(renderContext, zoom, x, y, sdx, sdy)
 
   def drawInfo(self, renderContext, zoom, xmin, ymin, xmax, ymax):
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
     lines = []
     lines.append("TileLayer")
     lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
@@ -326,7 +328,7 @@ class TileLayer(QgsPluginLayer):
     lines.append(" map size: %f, %f" % (renderContext.extent().width(), renderContext.extent().height() ) )
     lines.append(" canvas size (pixel): %d, %d" % (renderContext.painter().viewport().size().width(), renderContext.painter().viewport().size().height() ) )
     lines.append(" logicalDpiX: %f" % renderContext.painter().device().logicalDpiX() )
-    lines.append(" outputDpi: %f" % self.iface.mapCanvas().mapRenderer().outputDpi() )
+    lines.append(" outputDpi: %f" % mapSettings.outputDpi() )
     lines.append(" mapToPixel: %s" % renderContext.mapToPixel().showParameters() )
     p = renderContext.painter()
     textRect = p.boundingRect(QRect(QPoint(0, 0), p.viewport().size()), Qt.AlignLeft, "Q")
@@ -345,9 +347,8 @@ class TileLayer(QgsPluginLayer):
     #return QgsRectangle(topLeft, bottomRight)
 
   def isCurrentCrsSupported(self):
-    if self.iface.mapCanvas().mapRenderer().destinationCrs().postgisSrid() == 3857:
-      return True
-    return False
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
+    return mapSettings.destinationCrs().postgisSrid() == 3857
 
   def networkReplyFinished(self, url, error, isFromCache):
     if self.iface is None or isFromCache:
@@ -403,6 +404,11 @@ class TileLayer(QgsPluginLayer):
   def log(self, msg):
     if debug_mode:
       qDebug(msg)
+
+#  def createMapRenderer(self, renderContext):
+#    qDebug("createMapRenderer")
+#    self.renderer = QgsPluginLayerRenderer(self, renderContext)
+#    return self.renderer
 
   def dump(self, detail=False, bbox=None):
     pass

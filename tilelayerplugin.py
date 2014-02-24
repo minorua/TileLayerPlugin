@@ -33,6 +33,8 @@ debug_mode = 1
 class TileLayerPlugin:
 
     def __init__(self, iface):
+        self.apiChanged22 = QGis.QGIS_VERSION_INT >= 20300
+
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
@@ -52,6 +54,8 @@ class TileLayerPlugin:
         self.pluginName = QCoreApplication.translate("TileLayerPlugin", "TileLayerPlugin")
         self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 10, type=int))
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
+
+        self.layers = {}
 
     def initGui(self):
         # Create actions
@@ -108,6 +112,7 @@ class TileLayerPlugin:
         layer = TileLayer(self, serviceInfo, creditVisibility, pseudo_mercator)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
+          self.layers[layer.id()] = layer
 
     def settings(self):
       from settingsdialog import SettingsDialog
@@ -119,16 +124,31 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
 
     def setCrs(self, crs):
-      mapCanvas = self.iface.mapCanvas()
-      currentCrs = mapCanvas.mapRenderer().destinationCrs()
-      if currentCrs == crs:
-        return
-      # enable "on the fly"
-      mapCanvas.mapRenderer().setProjectionsEnabled(True)
+      if self.apiChanged22:
+        mapCanvas = self.iface.mapCanvas()
+        currentCrs = mapCanvas.mapSettings().destinationCrs()
+        if currentCrs == crs:
+          return
+        # enable "on the fly"
+        mapCanvas.setCrsTransformEnabled(True)
 
-      # set crs
-      mapCanvas.freeze()
-      mapCanvas.mapRenderer().setDestinationCrs(crs)
-      if crs.mapUnits() != QGis.UnknownUnit:
-        mapCanvas.setMapUnits(crs.mapUnits())
-      mapCanvas.freeze(False)
+        # set crs
+        mapCanvas.freeze()
+        mapCanvas.setDestinationCrs(crs)
+        if crs.mapUnits() != QGis.UnknownUnit:
+          mapCanvas.setMapUnits(crs.mapUnits())
+        mapCanvas.freeze(False)
+      else:
+        mapCanvas = self.iface.mapCanvas()
+        currentCrs = mapCanvas.mapRenderer().destinationCrs()
+        if currentCrs == crs:
+          return
+        # enable "on the fly"
+        mapCanvas.mapRenderer().setProjectionsEnabled(True)
+
+        # set crs
+        mapCanvas.freeze()
+        mapCanvas.mapRenderer().setDestinationCrs(crs)
+        if crs.mapUnits() != QGis.UnknownUnit:
+          mapCanvas.setMapUnits(crs.mapUnits())
+        mapCanvas.freeze(False)
