@@ -28,6 +28,7 @@ import os
 import math
 from tiles import *
 from downloader import Downloader
+import threading
 
 debug_mode = 1
 
@@ -76,6 +77,14 @@ class TileLayer(QgsPluginLayer):
     self.downloader.DEFAULT_CACHE_EXPIRATION = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
     QObject.connect(self.downloader, SIGNAL("replyFinished(QString, int, int)"), self.networkReplyFinished)
 
+    # multi-thread rendering
+    self.drawing = False      #DEBUG: TODO remove
+    self.eventLoop = None
+    QObject.connect(self, SIGNAL("fetchRequest(QStringList)"), self.fetchRequest)
+    if self.iface:
+      QObject.connect(self, SIGNAL("showMessage(QString, int)"), self.showStatusMessageSlot)
+      QObject.connect(self, SIGNAL("showBarMessage(QString, QString, int, int)"), self.showBarMessageSlot)
+
   def setBlendingMode(self, modeName):
     self.blendingModeName = modeName
     self.blendingMode = getattr(QPainter, "CompositionMode_" + modeName, 0)
@@ -90,6 +99,7 @@ class TileLayer(QgsPluginLayer):
     self.setCustomProperty("creditVisibility", 1 if visible else 0)
 
   def draw(self, renderContext):
+    self.renderContext = renderContext
     if renderContext.extent().isEmpty():
       qDebug("Drawing is skipped because map extent is empty.")
       return True
@@ -98,7 +108,7 @@ class TileLayer(QgsPluginLayer):
     if not self.isCurrentCrsSupported():
       if self.plugin.navigationMessagesEnabled:
         msg = self.tr("TileLayer is available in EPSG:3857")
-        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
+        self.showBarMessage(msg, QgsMessageBar.INFO, 2)
       return True
 
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
@@ -136,15 +146,19 @@ class TileLayer(QgsPluginLayer):
     if zoom < self.layerDef.zmin:
       if self.plugin.navigationMessagesEnabled:
         msg = self.tr("Current zoom level ({0}) is smaller than zmin ({1}): {2}").format(zoom, self.layerDef.zmin, self.layerDef.title)
-        self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.INFO, 2)
+        self.showBarMessage(msg, QgsMessageBar.INFO, 2)
       return True
 
     # tile count limit
     tileCount = (lrx - ulx + 1) * (lry - uly + 1)
     if tileCount > self.MAX_TILE_COUNT:
       msg = self.tr("Tile count is over limit ({0}, max={1})").format(tileCount, self.MAX_TILE_COUNT)
-      self.iface.messageBar().pushMessage(self.plugin.pluginName, msg, QgsMessageBar.WARNING, 4)
+      self.showBarMessage(msg, QgsMessageBar.WARNING, 4)
       return True
+
+    if self.drawing:
+      qDebug("The last draw() is still running!")
+    self.drawing = True   #DEBUG: TODO remove
 
     # save painter state
     painter.save()
@@ -155,6 +169,7 @@ class TileLayer(QgsPluginLayer):
     painter.scale(scaleX, scaleY)
 
     if debug_mode:
+      self.logT("TileLayer.draw()")
       qDebug("Bottom-right of extent (pixel): %f, %f" % (pt.x(), pt.y()))   # Top-left is (0, 0)
       qDebug("Calculated scale: %f, %f" % (scaleX, scaleY))
 
@@ -186,9 +201,13 @@ class TileLayer(QgsPluginLayer):
           #else:    # tile was not found (Downloader.NOT_FOUND=0)
 
       self.tiles = tiles
-      # download tile data
       if len(urls) > 0:
-        files = self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
+        # fetch tile data
+        if self.plugin.apiChanged22:
+          files = self.fetchFiles(urls)
+        else:
+          files = self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
+
         for url in files.keys():
           self.tiles.setImageData(url, files[url])
 
@@ -204,9 +223,9 @@ class TileLayer(QgsPluginLayer):
               msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
               if self.downloader.fetchSuccesses == 0:
                 barmsg = self.tr("Failed to download all {0} files. - {1}").format(self.downloader.fetchErrors, self.name())
-          self.iface.mainWindow().statusBar().showMessage(msg, 5000)
+          self.showStatusMessage(msg, 5000)
           if barmsg:
-            self.iface.messageBar().pushMessage(self.plugin.pluginName, barmsg, QgsMessageBar.WARNING, 4)
+            self.showBarMessage(barmsg, QgsMessageBar.WARNING, 4)
 
       # apply layer style
       oldStyle = self.prepareStyle(painter)
@@ -236,12 +255,14 @@ class TileLayer(QgsPluginLayer):
       # draw plugin icon
       image = QImage(os.path.join(os.path.dirname(QFile.decodeName(__file__)), "icon_old.png"))
       painter.drawImage(5, 5, image)
+      self.logT("TileLayer.draw() ends")
     # restore painter state
     painter.restore()
 
     if isDpiEqualToCanvas:
       # save zoom level for printing (output with different dpi from map canvas)
       self.canvasLastZoom = zoom
+    self.drawing = False    #DEBUG
     return True
 
   def drawTiles(self, renderContext, tiles, sdx=1.0, sdy=1.0):
@@ -353,12 +374,16 @@ class TileLayer(QgsPluginLayer):
   def networkReplyFinished(self, url, error, isFromCache):
     if self.iface is None or isFromCache:
       return
+    unfinishedCount = self.downloader.unfinishedCount()
+    if unfinishedCount == 0:
+      self.emit(SIGNAL("allRepliesFinished()"))
+
     downloadedCount = self.downloader.fetchSuccesses - self.downloader.cacheHits
-    totalCount = self.downloader.finishedCount() + self.downloader.unfinishedCount()
+    totalCount = self.downloader.finishedCount() + unfinishedCount
     msg = self.tr("{0} of {1} files downloaded.").format(downloadedCount, totalCount)
     if self.downloader.fetchErrors:
       msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
-    self.iface.mainWindow().statusBar().showMessage(msg)
+    self.showStatusMessage(msg)
 
   def readXml(self, node):
     self.readCustomProperties(node)
@@ -405,13 +430,81 @@ class TileLayer(QgsPluginLayer):
     if debug_mode:
       qDebug(msg)
 
+  def logT(self, msg):
+    if debug_mode:
+      qDebug("%s: %s" % (str(threading.current_thread()), msg))
+
+  def dump(self, detail=False, bbox=None):
+    pass
+
+  # functions for multi-thread rendering
+  def fetchFiles(self, urls):
+    self.logT("TileLayer.fetchFiles() starts")
+    # create a QEventLoop object that belongs to the current thread (if ver. > 2.1, it is render thread)
+    eventLoop = QEventLoop()
+    self.logT("Create event loop: " + str(eventLoop))    #DEBUG
+    QObject.connect(self, SIGNAL("allRepliesFinished()"), eventLoop.quit)
+
+    # create a timer to watch whether rendering is stopped
+    watchTimer = QTimer()
+    watchTimer.timeout.connect(eventLoop.quit)
+
+    # send a fetch request to the main thread
+    self.emit(SIGNAL("fetchRequest(QStringList)"), urls)
+
+    # wait for the fetch to finish
+    tick = 0
+    interval = 500
+    timeoutTick = self.plugin.downloadTimeout * 1000 / interval
+    watchTimer.start(interval)
+    while tick < timeoutTick:
+      # run event loop for 0.5 seconds at maximum
+      eventLoop.exec_()
+
+      if debug_mode:
+        qDebug("watchTimerTick: %d" % tick)
+        qDebug("unfinished downloads: %d" % self.downloader.unfinishedCount())
+
+      if self.downloader.unfinishedCount() == 0 or self.renderContext.renderingStopped():
+        break
+      tick += 1
+    watchTimer.stop()
+
+    if tick == timeoutTick and self.downloader.unfinishedCount() > 0:
+      self.log("fetchFiles timeout")
+      self.showBarMessage("fetchFiles timeout", duration=5)   #DEBUG
+      self.downloader.abort()
+      self.downloader.errorStatus = Downloader.TIMEOUT_ERROR
+    files = self.downloader.fetchedFiles
+
+    watchTimer.timeout.disconnect(eventLoop.quit)   #
+    QObject.disconnect(self, SIGNAL("allRepliesFinished()"), eventLoop.quit)
+
+    self.logT("TileLayer.fetchFiles() ends")
+    return files
+
+  def fetchRequest(self, urls):
+    self.logT("TileLayer.fetchRequest()")
+    self.downloader.fetchFilesAsync(urls, self.plugin.downloadTimeout)
+
+  def showStatusMessage(self, msg, timeout=0):
+    self.emit(SIGNAL("showMessage(QString, int)"), msg, timeout)
+
+  def showStatusMessageSlot(self, msg, timeout):
+    self.iface.mainWindow().statusBar().showMessage(msg, timeout)
+
+  def showBarMessage(self, text, level=QgsMessageBar.INFO, duration=0, title=None):
+    if title is None:
+      title = self.plugin.pluginName
+    self.emit(SIGNAL("showBarMessage(QString, QString, int, int)"), title, text, level, duration)
+
+  def showBarMessageSlot(self, title, text, level, duration):
+    self.iface.messageBar().pushMessage(title, text, level, duration)
+
 #  def createMapRenderer(self, renderContext):
 #    qDebug("createMapRenderer")
 #    self.renderer = QgsPluginLayerRenderer(self, renderContext)
 #    return self.renderer
-
-  def dump(self, detail=False, bbox=None):
-    pass
 
 class TileLayerType(QgsPluginLayerType):
   def __init__(self, plugin):

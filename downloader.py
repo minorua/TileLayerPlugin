@@ -24,6 +24,7 @@ from PyQt4.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.core import *
 import os
 import datetime
+import threading
 
 debug_mode = 1
 
@@ -62,17 +63,22 @@ class Downloader(QObject):
 
   def fetchTimedOut(self):
     self.log("Downloader.timeOut()")
+    self.abort()
     self.errorStatus = Downloader.TIMEOUT_ERROR
+
+  def abort(self):
     # clear queue and abort sent requests
     self.queue = []
+    self.timer.stop()
     for reply in self.replies:
       reply.abort()
+    self.errorStatus = Downloader.UNKNOWN_ERROR
 
   def replyFinished(self):
     reply = self.sender()
     url = reply.request().url().toString()
     self.log("replyFinished: %s" % url)
-    if self.sync and not url in self.fetchedFiles:
+    if not url in self.fetchedFiles:
       self.fetchedFiles[url] = None
     self.requestingUrls.remove(url)
     self.replies.remove(reply)
@@ -94,9 +100,8 @@ class Downloader(QObject):
             self.log("Default expiration date has been set: %s (%d h)" % (url, self.DEFAULT_CACHE_EXPIRATION))
 
       if reply.isReadable():
-        if self.sync:
-          data = reply.readAll()
-          self.fetchedFiles[url] = data
+        data = reply.readAll()
+        self.fetchedFiles[url] = data
       else:
         qDebug("http status code: " + str(httpStatusCode))
     else:
@@ -109,11 +114,18 @@ class Downloader(QObject):
     self.emit(SIGNAL('replyFinished(QString, int, int)'), url, reply.error(), isFromCache)
     reply.deleteLater()
 
-    if self.sync and len(self.queue) + len(self.requestingUrls) == 0:
-      self.log("eventLoop.quit()")
-      self.eventLoop.quit()
+    if debug_mode:
+      qDebug("queue: %d, requesting: %d" % (len(self.queue), len(self.requestingUrls)))
 
-    if len(self.queue) > 0:
+    if len(self.queue) + len(self.requestingUrls) == 0:
+      # all replies have been received
+      if self.sync:
+        self.logT("eventLoop.quit()")
+        self.eventLoop.quit()
+      else:
+        self.timer.stop()
+    elif len(self.queue) > 0:
+      # start fetching the next file
       self.fetchNext()
     self.log("replyFinished End: %s" % url)
 
@@ -148,10 +160,16 @@ class Downloader(QObject):
     for i in range(self.MAX_CONNECTION):
       self.fetchNext()
 
+    #if self.eventLoop.isRunning():    #DEBUG: TODO remove
+    #  qDebug("The last eventLoop is still running!")
+    #  self.timer.stop()
+    #  self.eventLoop.quit()
+
     if timeoutSec > 0:
       self.timer.setInterval(timeoutSec * 1000)
       self.timer.start()
-    self.log("eventLoop.exec_()")
+
+    self.logT("eventLoop.exec_(): " + str(self.eventLoop))
     self.eventLoop.exec_()
     self.log("fetchFiles() End: %d" % self.errorStatus)
     if timeoutSec > 0:
@@ -177,23 +195,27 @@ class Downloader(QObject):
     if debug_mode:
       qDebug(msg)
 
-### TODO: sync fetching
-  def startFetch(self):
-    self.fetchNext()
+  def logT(self, msg):
+    if debug_mode:
+      qDebug("%s: %s" % (str(threading.current_thread()), msg))
 
-  def clear(self):
+  def fetchFilesAsync(self, urlList, timeoutSec=0):
+    self.log("fetchFilesAsync()")
+    self.sync = False
     self.queue = []
-    self.requestingUrls = []
+    self.clearCounts()
+    self.errorStatus = Downloader.NO_ERROR
+    self.fetchedFiles = {}
 
-  def fetch(self, url):
-    self.sync = False
-    if not url in self.queue:
-      self.queue.append(url)
-    self.fetchNext()
+    if len(urlList) == 0:
+      return self.fetchedFiles
 
-  def fetchFilesAsync(self, urlList):
-    self.sync = False
     for url in urlList:
-      if not url in self.queue:
-        self.queue.append(url)
-    self.fetchNext()
+      self.addToQueue(url)
+
+    for i in range(self.MAX_CONNECTION):
+      self.fetchNext()
+
+    if timeoutSec > 0:
+      self.timer.setInterval(timeoutSec * 1000)
+      self.timer.start()
