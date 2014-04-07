@@ -12,7 +12,7 @@
 name=TileLayer Plugin
 qgisMinimumVersion=2.0
 description=It's easy to add tile maps onto your map canvas! With this plugin, you can view Pseudo Mercator projected tile maps.
-version=0.20
+version=0.30
 author=Minoru Akagi
 email=akaginch@gmail.com
 
@@ -21,7 +21,9 @@ email=akaginch@gmail.com
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-# changelog=
+changelog=
+    fix "Could not draw" error that occurs in 64-bit QGIS (OSGeo4W64).
+    adapt to multi-thread rendering.
 
 # tags are comma separated with spaces allowed
 tags=Tile,TMS

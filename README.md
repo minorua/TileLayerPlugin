@@ -42,6 +42,10 @@ slope.tsv
 Note: Use tab character to separate fields!
 
 ## ChangeLog
+version 0.30  
+* Fix "Could not draw" error that occurs in 64-bit QGIS (OSGeo4W64).
+* Adapt to multi-thread rendering.
+
 version 0.20  
 * Layer information file extension is limited to tsv.
 * providerName field is renamed to credit, and so on.
