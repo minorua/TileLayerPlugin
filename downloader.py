@@ -54,6 +54,7 @@ class Downloader(QObject):
     self.timer.setSingleShot(True)
     self.timer.timeout.connect(self.fetchTimedOut)
 
+    self.userAgent = "Mozilla/5.0"
     self.errorStatus = Downloader.NO_ERROR
 
   def clearCounts(self):
@@ -136,7 +137,7 @@ class Downloader(QObject):
     self.log("fetchNext: %s" % url)
 
     request = QNetworkRequest(QUrl(url))
-    request.setRawHeader("User-Agent", "QGIS/2.x TileLayerPlugin/0.x")
+    request.setRawHeader("User-Agent", self.userAgent)
     reply = QgsNetworkAccessManager.instance().get(request)
     reply.finished.connect(self.replyFinished)
     self.requestingUrls.append(url)
@@ -159,11 +160,6 @@ class Downloader(QObject):
 
     for i in range(self.MAX_CONNECTION):
       self.fetchNext()
-
-    #if self.eventLoop.isRunning():    #DEBUG: TODO remove
-    #  qDebug("The last eventLoop is still running!")
-    #  self.timer.stop()
-    #  self.eventLoop.quit()
 
     if timeoutSec > 0:
       self.timer.setInterval(timeoutSec * 1000)

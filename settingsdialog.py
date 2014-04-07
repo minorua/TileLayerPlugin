@@ -24,8 +24,8 @@ from PyQt4.QtGui import *
 from ui_settingsdialog import Ui_Dialog
 
 class SettingsDialog(QDialog):
-  def __init__(self):
-    QDialog.__init__(self)
+  def __init__(self, iface):
+    QDialog.__init__(self, iface.mainWindow())
     # set up the user interface
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)

@@ -32,8 +32,10 @@ debug_mode = 1
 
 class TileLayerPlugin:
 
+    VERSION = "0.30"
+
     def __init__(self, iface):
-        self.apiChanged22 = QGis.QGIS_VERSION_INT >= 20300
+        self.apiChanged23 = QGis.QGIS_VERSION_INT >= 20300
 
         # Save reference to the QGIS interface
         self.iface = iface
@@ -42,7 +44,7 @@ class TileLayerPlugin:
         # initialize locale
         settings = QSettings()
         locale = settings.value("locale/userLocale")[0:2]
-        localePath = os.path.join(self.plugin_dir, 'i18n', 'tilelayerplugin_{}.qm'.format(locale))
+        localePath = os.path.join(self.plugin_dir, 'i18n', 'tilelayerplugin_{0}.qm'.format(locale))
 
         if os.path.exists(localePath):
             self.translator = QTranslator()
@@ -106,7 +108,7 @@ class TileLayerPlugin:
 
     def run(self):
       from addlayerdialog import AddLayerDialog
-      dialog = AddLayerDialog()
+      dialog = AddLayerDialog(self.iface)
       dialog.show()
       accepted = dialog.exec_()
       if not accepted:
@@ -125,7 +127,7 @@ class TileLayerPlugin:
 
     def settings(self):
       from settingsdialog import SettingsDialog
-      dialog = SettingsDialog()
+      dialog = SettingsDialog(self.iface)
       dialog.show()
       accepted = dialog.exec_()
       if accepted:
@@ -133,7 +135,7 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
 
     def setCrs(self, crs):
-      if self.apiChanged22:
+      if self.apiChanged23:
         mapCanvas = self.iface.mapCanvas()
         currentCrs = mapCanvas.mapSettings().destinationCrs()
         if currentCrs == crs:

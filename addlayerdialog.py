@@ -30,8 +30,8 @@ from tiles import BoundingBox, TileServiceInfo
 debug_mode = 1
 
 class AddLayerDialog(QDialog):
-  def __init__(self):
-    QDialog.__init__(self)
+  def __init__(self, iface):
+    QDialog.__init__(self, iface.mainWindow())
     settings = QSettings()
     self.extDir = settings.value("/TileLayerPlugin/extDir", "", type=unicode)
 

@@ -74,11 +74,11 @@ class TileLayer(QgsPluginLayer):
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
 
     self.downloader = Downloader(self)
+    self.downloader.userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION) # not written since QGIS 2.2
     self.downloader.DEFAULT_CACHE_EXPIRATION = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
     QObject.connect(self.downloader, SIGNAL("replyFinished(QString, int, int)"), self.networkReplyFinished)
 
     # multi-thread rendering
-    self.drawing = False      #DEBUG: TODO remove
     self.eventLoop = None
     QObject.connect(self, SIGNAL("fetchRequest(QStringList)"), self.fetchRequest)
     if self.iface:
@@ -112,7 +112,7 @@ class TileLayer(QgsPluginLayer):
         self.showBarMessage(msg, QgsMessageBar.INFO, 2)
       return True
 
-    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == mapSettings.outputDpi()
     if isDpiEqualToCanvas:
       # calculate zoom level
@@ -157,10 +157,6 @@ class TileLayer(QgsPluginLayer):
       self.showBarMessage(msg, QgsMessageBar.WARNING, 4)
       return True
 
-    if self.drawing:
-      qDebug("The last draw() is still running!")
-    self.drawing = True   #DEBUG: TODO remove
-
     # save painter state
     painter.save()
 
@@ -204,7 +200,7 @@ class TileLayer(QgsPluginLayer):
       self.tiles = tiles
       if len(urls) > 0:
         # fetch tile data
-        if self.plugin.apiChanged22:
+        if self.plugin.apiChanged23:
           files = self.fetchFiles(urls)
         else:
           files = self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
@@ -252,18 +248,18 @@ class TileLayer(QgsPluginLayer):
           #painter.fillRect(rect, QColor(240, 240, 240, 200))
           qDebug("credit text rect: " + str(textRect))
 
-    if debug_mode:
+    if 0: #debug_mode:
       # draw plugin icon
       image = QImage(os.path.join(os.path.dirname(QFile.decodeName(__file__)), "icon_old.png"))
       painter.drawImage(5, 5, image)
       self.logT("TileLayer.draw() ends")
+
     # restore painter state
     painter.restore()
 
     if isDpiEqualToCanvas:
       # save zoom level for printing (output with different dpi from map canvas)
       self.canvasLastZoom = zoom
-    self.drawing = False    #DEBUG
     return True
 
   def drawTiles(self, renderContext, tiles, sdx=1.0, sdy=1.0):
@@ -338,7 +334,7 @@ class TileLayer(QgsPluginLayer):
         self.drawNumber(renderContext, zoom, x, y, sdx, sdy)
 
   def drawInfo(self, renderContext, zoom, xmin, ymin, xmax, ymax):
-    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     lines = []
     lines.append("TileLayer")
     lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
@@ -366,7 +362,7 @@ class TileLayer(QgsPluginLayer):
     #return QgsRectangle(topLeft, bottomRight)
 
   def isCurrentCrsSupported(self):
-    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged22 else self.iface.mapCanvas().mapRenderer()
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     return mapSettings.destinationCrs().postgisSrid() == 3857
 
   def networkReplyFinished(self, url, error, isFromCache):
