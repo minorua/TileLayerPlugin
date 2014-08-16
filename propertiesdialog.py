@@ -41,6 +41,7 @@ class PropertiesDialog(QDialog):
     i = self.ui.comboBox_BlendingMode.findText(layer.blendModeName)
     if i != -1:
       self.ui.comboBox_BlendingMode.setCurrentIndex(i)
+    self.ui.checkBox_SmoothRender.setChecked(layer.smoothRender)
     self.ui.checkBox_CreditVisibility.setChecked(layer.creditVisibility)
 
   def initBlendingCombo(self):

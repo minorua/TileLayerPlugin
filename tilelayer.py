@@ -36,12 +36,12 @@ class LayerDefaultSettings:
 
   TRANSPARENCY = 0
   BLEND_MODE = "SourceOver"
+  SMOOTH_RENDER = True
 
 class TileLayer(QgsPluginLayer):
 
   LAYER_TYPE = "TileLayer"
   MAX_TILE_COUNT = 256
-  RENDER_HINT = QPainter.SmoothPixmapTransform    #QPainter.Antialiasing
 
   def __init__(self, plugin, layerDef, creditVisibility=1, pseudo_mercator=None):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
@@ -72,6 +72,7 @@ class TileLayer(QgsPluginLayer):
     self.tiles = None
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
+    self.setSmoothRender(LayerDefaultSettings.SMOOTH_RENDER)
 
     self.downloader = Downloader(self)
     self.downloader.userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION) # not written since QGIS 2.2
@@ -94,6 +95,10 @@ class TileLayer(QgsPluginLayer):
   def setTransparency(self, transparency):
     self.transparency = transparency
     self.setCustomProperty("transparency", transparency)
+
+  def setSmoothRender(self, isSmooth):
+    self.smoothRender = isSmooth
+    self.setCustomProperty("smoothRender", 1 if isSmooth else 0)
 
   def setCreditVisibility(self, visible):
     self.creditVisibility = visible
@@ -225,14 +230,20 @@ class TileLayer(QgsPluginLayer):
             self.showBarMessage(barmsg, QgsMessageBar.WARNING, 4)
 
       # apply layer style
-      oldStyle = self.prepareStyle(painter)
+      oldOpacity = painter.opacity()
+      painter.setOpacity(0.01 * (100 - self.transparency))
+      oldSmoothRenderHint = painter.testRenderHint(QPainter.SmoothPixmapTransform)
+      if self.smoothRender:
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
       # draw tiles
       self.drawTiles(renderContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
       #self.drawTilesDirectly(renderContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
 
       # restore layer style
-      self.restoreStyle(painter, oldStyle)
+      painter.setOpacity(oldOpacity)
+      if self.smoothRender:
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, oldSmoothRenderHint)
 
       # draw credit on the bottom right corner
       if self.creditVisibility and self.layerDef.credit:
@@ -289,20 +300,6 @@ class TileLayer(QgsPluginLayer):
         image.loadFromData(tile.data)
         p.drawImage(rect, image)
 
-  def prepareStyle(self, painter):
-    oldRenderHints = 0
-    if self.RENDER_HINT is not None:
-      oldRenderHints = painter.renderHints()
-      painter.setRenderHint(self.RENDER_HINT, True)
-    oldOpacity = painter.opacity()
-    painter.setOpacity(0.01 * (100 - self.transparency))
-    return [oldRenderHints, oldOpacity]
-
-  def restoreStyle(self, painter, oldStyles):
-    if self.RENDER_HINT is not None:
-      painter.setRenderHints(oldStyles[0])
-    painter.setOpacity(oldStyles[1])
-
   def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy):
     if "frame" in self.layerDef.serviceUrl:
       self.drawFrames(renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy)
@@ -314,7 +311,10 @@ class TileLayer(QgsPluginLayer):
   def drawFrame(self, renderContext, zoom, x, y, sdx, sdy):
     rect = self.getTileRect(renderContext, zoom, x, y, sdx, sdy)
     p = renderContext.painter()
-    p.drawRect(rect)
+    #p.drawRect(rect)   # A slash appears on the top-right tile without Antialiasing render hint.
+    pts = [rect.topLeft(), rect.topRight(), rect.bottomRight(), rect.bottomLeft(), rect.topLeft()]
+    for i in range(4):
+      p.drawLine(pts[i], pts[i+1])
 
   def drawFrames(self, renderContext, zoom, xmin, ymin, xmax, ymax, sdx, sdy):
     for y in range(ymin, ymax + 1):
@@ -396,6 +396,7 @@ class TileLayer(QgsPluginLayer):
     # layer style
     self.setTransparency(int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY)))
     self.setBlendModeByName(self.customProperty("blendMode", LayerDefaultSettings.BLEND_MODE))
+    self.setSmoothRender(int(self.customProperty("smoothRender", LayerDefaultSettings.SMOOTH_RENDER)))
     self.creditVisibility = int(self.customProperty("creditVisibility", 1))
     return True
 
@@ -516,6 +517,7 @@ class TileLayerType(QgsPluginLayerType):
     if accepted:
       layer.setTransparency(dialog.ui.spinBox_Transparency.value())
       layer.setBlendModeByName(dialog.ui.comboBox_BlendingMode.currentText())
+      layer.setSmoothRender(dialog.ui.checkBox_SmoothRender.isChecked())
       layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
       layer.emit(SIGNAL("repaintRequested()"))
     return True

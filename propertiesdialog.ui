@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>438</width>
-    <height>351</height>
+    <height>367</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,6 +96,13 @@
            </layout>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_SmoothRender">
+          <property name="text">
+           <string>Smooth rendering</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_CreditVisibility">
