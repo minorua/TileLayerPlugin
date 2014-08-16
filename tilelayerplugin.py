@@ -163,3 +163,6 @@ class TileLayerPlugin:
         if crs.mapUnits() != QGis.UnknownUnit:
           mapCanvas.setMapUnits(crs.mapUnits())
         mapCanvas.freeze(False)
+
+      msg = QCoreApplication.translate("TileLayerPlugin", "Project CRS has been changed to EPSG:3857.")
+      self.iface.messageBar().pushMessage(self.pluginName, msg, QgsMessageBar.INFO, 5)
