@@ -65,23 +65,19 @@ class TileLayerPlugin:
         self.action = QAction(
             QIcon(":/plugins/tilelayerplugin/icon.png"),
             self.tr("Add Tile Layer..."), self.iface.mainWindow())
-        self.actionSettings = QAction(
-            self.tr("Settings..."), self.iface.mainWindow())
 
         # set object name
         self.action.setObjectName("TileLayerPlugin_AddLayer")
-        self.actionSettings.setObjectName("TileLayerPlugin_Settings")
 
         # connect the actions to the methods
         self.action.triggered.connect(self.run)
-        self.actionSettings.triggered.connect(self.settings)
 
         # Add toolbar button and menu item
-        self.iface.layerToolBar().addAction(self.action)
-        self.iface.insertAddLayerAction(self.action)
-        self.iface.addPluginToMenu(self.pluginName, self.action)
-        self.iface.addPluginToMenu(self.pluginName, self.actionSettings)
-        #self.iface.addToolBarIcon(self.action)
+        if QSettings().value("/TileLayerPlugin/moveToLayer", 0, type=int):
+          self.iface.insertAddLayerAction(self.action)
+          self.iface.layerToolBar().addAction(self.action)
+        else:
+          self.iface.addPluginToWebMenu(self.pluginName, self.action)
 
         # Register plugin layer type
         self.tileLayerType = TileLayerType(self)
@@ -89,11 +85,11 @@ class TileLayerPlugin:
 
     def unload(self):
         # Remove the plugin menu item and icon
-        self.iface.layerToolBar().removeAction(self.action)
-        self.iface.removeAddLayerAction(self.action)
-        self.iface.removePluginMenu(self.pluginName, self.action)
-        self.iface.removePluginMenu(self.pluginName, self.actionSettings)
-        #self.iface.removeToolBarIcon(self.action)
+        if QSettings().value("/TileLayerPlugin/moveToLayer", 0, type=int):
+          self.iface.layerToolBar().removeAction(self.action)
+          self.iface.removeAddLayerAction(self.action)
+        else:
+          self.iface.removePluginWebMenu(self.pluginName, self.action)
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
@@ -126,6 +122,8 @@ class TileLayerPlugin:
           self.layers[layer.id()] = layer
 
     def settings(self):
+      oldMoveToLayer = QSettings().value("/TileLayerPlugin/moveToLayer", 0, type=int)
+
       from settingsdialog import SettingsDialog
       dialog = SettingsDialog(self.iface)
       accepted = dialog.exec_()
@@ -133,6 +131,20 @@ class TileLayerPlugin:
         return False
       self.downloadTimeout = dialog.ui.spinBox_downloadTimeout.value()
       self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
+
+      moveToLayer = dialog.ui.checkBox_MoveToLayer.checkState()
+      if moveToLayer != oldMoveToLayer:
+        if oldMoveToLayer:
+          self.iface.layerToolBar().removeAction(self.action)
+          self.iface.removeAddLayerAction(self.action)
+        else:
+          self.iface.removePluginWebMenu(self.pluginName, self.action)
+
+        if moveToLayer:
+          self.iface.insertAddLayerAction(self.action)
+          self.iface.layerToolBar().addAction(self.action)
+        else:
+          self.iface.addPluginToWebMenu(self.pluginName, self.action)
       return True
 
     def setCrs(self, crs):
