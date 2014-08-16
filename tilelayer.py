@@ -178,7 +178,7 @@ class TileLayer(QgsPluginLayer):
     # set pen and font
     painter.setPen(Qt.black)
     font = QFont(painter.font())
-    font.setPointSize(12)
+    font.setPointSize(10)
     painter.setFont(font)
 
     if self.layerDef.serviceUrl[0] == ":":
