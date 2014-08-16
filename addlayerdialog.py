@@ -91,8 +91,11 @@ class AddLayerDialog(QDialog):
     try:
       with codecs.open(filename, "r", "utf-8") as f:
         lines = f.readlines()
+    except UnicodeDecodeError:
+      QgsMessageLog.logMessage(self.tr("Fail to read: {0} (encoding must be UTF-8)").format(basename), self.tr("TileLayerPlugin"))
+      return False
     except:
-      QgsMessageLog.logMessage(self.tr("Fail to read: {}").format(basename), self.tr("TileLayerPlugin"))
+      QgsMessageLog.logMessage(self.tr("Fail to read: {0}").format(basename), self.tr("TileLayerPlugin"))
       return False
 
     for i, line in enumerate(lines):
