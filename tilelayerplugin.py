@@ -108,7 +108,7 @@ class TileLayerPlugin:
 
     def run(self):
       from addlayerdialog import AddLayerDialog
-      dialog = AddLayerDialog(self.iface)
+      dialog = AddLayerDialog(self)
       dialog.show()
       accepted = dialog.exec_()
       if not accepted:
@@ -128,11 +128,12 @@ class TileLayerPlugin:
     def settings(self):
       from settingsdialog import SettingsDialog
       dialog = SettingsDialog(self.iface)
-      dialog.show()
       accepted = dialog.exec_()
-      if accepted:
-        self.downloadTimeout = dialog.ui.spinBox_downloadTimeout.value()
-        self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
+      if not accepted:
+        return False
+      self.downloadTimeout = dialog.ui.spinBox_downloadTimeout.value()
+      self.navigationMessagesEnabled = dialog.ui.checkBox_NavigationMessages.checkState()
+      return True
 
     def setCrs(self, crs):
       if self.apiChanged23:

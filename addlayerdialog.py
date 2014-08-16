@@ -30,22 +30,20 @@ from tiles import BoundingBox, TileServiceInfo
 debug_mode = 1
 
 class AddLayerDialog(QDialog):
-  def __init__(self, iface):
-    QDialog.__init__(self, iface.mainWindow())
-    settings = QSettings()
-    self.extDir = settings.value("/TileLayerPlugin/extDir", "", type=unicode)
+  def __init__(self, plugin):
+    QDialog.__init__(self, plugin.iface.mainWindow())
+    self.plugin = plugin
 
     # set up the user interface
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)
-    extDirText = self.extDir if self.extDir else self.tr("Not set")
-    self.ui.label_externalDirectory.setText(extDirText)
     self.ui.pushButton_Add.clicked.connect(self.accept)
     self.ui.pushButton_Close.clicked.connect(self.reject)
-    self.ui.toolButton_externalDirectory.clicked.connect(self.selectExternalDirectory)
+    self.ui.pushButton_Settings.clicked.connect(self.settingsClicked)
     self.setupTreeView()
 
   def setupTreeView(self):
+
     # tree view header labels
     headers = [self.tr("Title"), self.tr("Credit"), self.tr("Url"), self.tr("Zoom"), self.tr("Extent"), self.tr("yOrigin")] + ["index"]
     self.indexColumn = len(headers) - 1
@@ -54,11 +52,12 @@ class AddLayerDialog(QDialog):
     self.model.setHorizontalHeaderLabels(headers)
 
     self.serviceInfoList = []
-    # import service info from external layers directory, and append it into the tree
-    if self.extDir:
-      self.importFromDirectory(self.extDir)
+    # import layer definitions from external layer definition directory, and append it into the tree
+    extDir = QSettings().value("/TileLayerPlugin/extDir", "", type=unicode)
+    if extDir:
+      self.importFromDirectory(extDir)
 
-    # import service info from TileLayerPlugin/layers directory, and append it into the tree
+    # import layer definitions from TileLayerPlugin/layers directory, and append it into the tree
     pluginDir = os.path.dirname(QFile.decodeName(__file__))
     self.importFromDirectory(os.path.join(pluginDir, "layers"))
 
@@ -138,13 +137,6 @@ class AddLayerDialog(QDialog):
         list.append(self.serviceInfoList[int(idx.data())])
     return list
 
-  def selectExternalDirectory(self):
-    # show select directory dialog
-    d  = QFileDialog.getExistingDirectory(self, self.tr("Select external layers directory"), self.extDir)
-    if d == "":
-      return
-    self.extDir = d
-    settings = QSettings()
-    settings.setValue("/TileLayerPlugin/extDir", self.extDir)
-    self.ui.label_externalDirectory.setText(self.extDir)
-    self.setupTreeView()
+  def settingsClicked(self):
+    if self.plugin.settings():
+      self.setupTreeView()
