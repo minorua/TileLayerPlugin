@@ -38,7 +38,7 @@ class AddLayerDialog(QDialog):
     # set up the user interface
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)
-    extDirText = self.extDir if self.extDir != "" else self.tr("Not set")
+    extDirText = self.extDir if self.extDir else self.tr("Not set")
     self.ui.label_externalDirectory.setText(extDirText)
     self.ui.pushButton_Add.clicked.connect(self.accept)
     self.ui.pushButton_Close.clicked.connect(self.reject)
@@ -55,7 +55,7 @@ class AddLayerDialog(QDialog):
 
     self.serviceInfoList = []
     # import service info from external layers directory, and append it into the tree
-    if self.extDir != "":
+    if self.extDir:
       self.importFromDirectory(self.extDir)
 
     # import service info from TileLayerPlugin/layers directory, and append it into the tree

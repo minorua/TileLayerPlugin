@@ -49,5 +49,5 @@ class SettingsDialog(QDialog):
   def selectExternalDirectory(self):
     # show select directory dialog
     d  = QFileDialog.getExistingDirectory(self, self.tr("Select external layers directory"), self.ui.lineEdit_externalDirectory.text())
-    if d != "":
+    if d:
       self.ui.lineEdit_externalDirectory.setText(d)

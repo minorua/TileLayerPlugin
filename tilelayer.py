@@ -235,7 +235,7 @@ class TileLayer(QgsPluginLayer):
       self.restoreStyle(painter, oldStyle)
 
       # draw credit on the bottom right corner
-      if self.creditVisibility and self.layerDef.credit != "":
+      if self.creditVisibility and self.layerDef.credit:
         margin, paddingH, paddingV = (5, 4, 3)
         canvasSize = painter.viewport().size()
         rect = QRect(0, 0, canvasSize.width() - margin, canvasSize.height() - margin)

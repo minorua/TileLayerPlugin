@@ -53,7 +53,7 @@ class TileLayerPlugin:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        self.pluginName = QCoreApplication.translate("TileLayerPlugin", "TileLayerPlugin")
+        self.pluginName = self.tr("TileLayerPlugin")
         self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 10, type=int))
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
 
@@ -64,9 +64,9 @@ class TileLayerPlugin:
         # Create actions
         self.action = QAction(
             QIcon(":/plugins/tilelayerplugin/icon.png"),
-            QCoreApplication.translate("TileLayerPlugin", "Add Tile Layer..."), self.iface.mainWindow())
+            self.tr("Add Tile Layer..."), self.iface.mainWindow())
         self.actionSettings = QAction(
-            QCoreApplication.translate("TileLayerPlugin", "Settings..."), self.iface.mainWindow())
+            self.tr("Settings..."), self.iface.mainWindow())
 
         # set object name
         self.action.setObjectName("TileLayerPlugin_AddLayer")
@@ -164,5 +164,8 @@ class TileLayerPlugin:
           mapCanvas.setMapUnits(crs.mapUnits())
         mapCanvas.freeze(False)
 
-      msg = QCoreApplication.translate("TileLayerPlugin", "Project CRS has been changed to EPSG:3857.")
+      msg = self.tr("Project CRS has been changed to EPSG:3857.")
       self.iface.messageBar().pushMessage(self.pluginName, msg, QgsMessageBar.INFO, 5)
+
+    def tr(self, msg):
+      return QCoreApplication.translate("TileLayerPlugin", msg)
