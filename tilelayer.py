@@ -70,6 +70,8 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
+    self.useLastZoomForPrint = False
+    self.canvasLastZoom = 0
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
     self.setSmoothRender(LayerDefaultSettings.SMOOTH_RENDER)
@@ -119,7 +121,7 @@ class TileLayer(QgsPluginLayer):
 
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == mapSettings.outputDpi()
-    if isDpiEqualToCanvas:
+    if isDpiEqualToCanvas or not self.useLastZoomForPrint:
       # calculate zoom level
       mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
       zoom = int(math.ceil(math.log(mpp1 / renderContext.mapToPixel().mapUnitsPerPixel(), 2) + 1))
@@ -129,25 +131,6 @@ class TileLayer(QgsPluginLayer):
       # for print composer output image, use last zoom level of map item on print composer (or map canvas)
       zoom = self.canvasLastZoom
 
-    # calculate tile range (yOrigin is top)
-    size = self.layerDef.TSIZE1 / 2 ** (zoom - 1)
-    matrixSize = 2 ** zoom
-    ulx = max(0, int((renderContext.extent().xMinimum() + self.layerDef.TSIZE1) / size))
-    uly = max(0, int((self.layerDef.TSIZE1 - renderContext.extent().yMaximum()) / size))
-    lrx = min(int((renderContext.extent().xMaximum() + self.layerDef.TSIZE1) / size), matrixSize - 1)
-    lry = min(int((self.layerDef.TSIZE1 - renderContext.extent().yMinimum()) / size), matrixSize - 1)
-
-    # bounding box limit
-    if self.layerDef.bbox:
-      trange = self.layerDef.bboxDegreesToTileRange(zoom, self.layerDef.bbox)
-      ulx = max(ulx, trange.xmin)
-      uly = max(uly, trange.ymin)
-      lrx = min(lrx, trange.xmax)
-      lry = min(lry, trange.ymax)
-      if lrx < ulx or lry < uly:
-        # the tile range is out of bounding box
-        return True
-
     # zoom limit
     if zoom < self.layerDef.zmin:
       if self.plugin.navigationMessagesEnabled:
@@ -155,12 +138,41 @@ class TileLayer(QgsPluginLayer):
         self.showBarMessage(msg, QgsMessageBar.INFO, 2)
       return True
 
-    # tile count limit
-    tileCount = (lrx - ulx + 1) * (lry - uly + 1)
-    if tileCount > self.MAX_TILE_COUNT:
-      msg = self.tr("Tile count is over limit ({0}, max={1})").format(tileCount, self.MAX_TILE_COUNT)
-      self.showBarMessage(msg, QgsMessageBar.WARNING, 4)
-      return True
+    while True:
+      # calculate tile range (yOrigin is top)
+      size = self.layerDef.TSIZE1 / 2 ** (zoom - 1)
+      matrixSize = 2 ** zoom
+      ulx = max(0, int((renderContext.extent().xMinimum() + self.layerDef.TSIZE1) / size))
+      uly = max(0, int((self.layerDef.TSIZE1 - renderContext.extent().yMaximum()) / size))
+      lrx = min(int((renderContext.extent().xMaximum() + self.layerDef.TSIZE1) / size), matrixSize - 1)
+      lry = min(int((self.layerDef.TSIZE1 - renderContext.extent().yMinimum()) / size), matrixSize - 1)
+
+      # bounding box limit
+      if self.layerDef.bbox:
+        trange = self.layerDef.bboxDegreesToTileRange(zoom, self.layerDef.bbox)
+        ulx = max(ulx, trange.xmin)
+        uly = max(uly, trange.ymin)
+        lrx = min(lrx, trange.xmax)
+        lry = min(lry, trange.ymax)
+        if lrx < ulx or lry < uly:
+          # tile range is out of the bounding box
+          return True
+
+      # tile count limit
+      tileCount = (lrx - ulx + 1) * (lry - uly + 1)
+      if tileCount > self.MAX_TILE_COUNT:
+        # as tile count is over the limit, decrease zoom level
+        zoom -= 1
+
+        # if the zoom level is less than the minimum, do not draw
+        if zoom < self.layerDef.zmin:
+          msg = self.tr("Tile count is over limit ({0}, max={1})").format(tileCount, self.MAX_TILE_COUNT)
+          self.showBarMessage(msg, QgsMessageBar.WARNING, 4)
+          return True
+        continue
+
+      # zoom level has been determined
+      break
 
     # save painter state
     painter.save()

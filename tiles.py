@@ -127,7 +127,7 @@ class TileServiceInfo:
     self.credit = credit
     self.serviceUrl = serviceUrl
     self.yOriginTop = yOriginTop
-    self.zmin = zmin
+    self.zmin = max(zmin, 0)
     self.zmax = zmax
     self.bbox = bbox
 
