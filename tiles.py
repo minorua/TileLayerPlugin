@@ -30,8 +30,8 @@ R = 6378137
 
 class TileDefaultSettings:
 
-  ZMIN = 10
-  ZMAX = 15
+  ZMIN = 0
+  ZMAX = 18
 
 def degreesToMercatorMeters(lon, lat):
   # formula: http://en.wikipedia.org/wiki/Mercator_projection#Mathematics_of_the_Mercator_projection
