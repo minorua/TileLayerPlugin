@@ -54,7 +54,7 @@ class TileLayerPlugin:
                 QCoreApplication.installTranslator(self.translator)
 
         self.pluginName = self.tr("TileLayerPlugin")
-        self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 10, type=int))
+        self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 30, type=int))
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
 
         self.layers = {}

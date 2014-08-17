@@ -34,7 +34,7 @@ class SettingsDialog(QDialog):
     # load settings
     settings = QSettings()
     self.ui.lineEdit_externalDirectory.setText(settings.value("/TileLayerPlugin/extDir", "", type=unicode))
-    self.ui.spinBox_downloadTimeout.setValue(int(settings.value("/TileLayerPlugin/timeout", 10, type=int)))
+    self.ui.spinBox_downloadTimeout.setValue(int(settings.value("/TileLayerPlugin/timeout", 30, type=int)))
     self.ui.checkBox_MoveToLayer.setCheckState(int(settings.value("/TileLayerPlugin/moveToLayer", 0, type=int)))
     self.ui.checkBox_NavigationMessages.setCheckState(int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int)))
 
