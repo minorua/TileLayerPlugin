@@ -525,12 +525,20 @@ class TileLayerType(QgsPluginLayerType):
   def showLayerProperties(self, layer):
     from propertiesdialog import PropertiesDialog
     dialog = PropertiesDialog(layer)
+    QObject.connect(dialog, SIGNAL("applyClicked()"), self.applyClicked)
     dialog.show()
     accepted = dialog.exec_()
     if accepted:
-      layer.setTransparency(dialog.ui.spinBox_Transparency.value())
-      layer.setBlendModeByName(dialog.ui.comboBox_BlendingMode.currentText())
-      layer.setSmoothRender(dialog.ui.checkBox_SmoothRender.isChecked())
-      layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
-      layer.emit(SIGNAL("repaintRequested()"))
+      self.applyProperties(dialog)
     return True
+
+  def applyClicked(self):
+    self.applyProperties(QObject().sender())
+
+  def applyProperties(self, dialog):
+    layer = dialog.layer
+    layer.setTransparency(dialog.ui.spinBox_Transparency.value())
+    layer.setBlendModeByName(dialog.ui.comboBox_BlendingMode.currentText())
+    layer.setSmoothRender(dialog.ui.checkBox_SmoothRender.isChecked())
+    layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
+    layer.emit(SIGNAL("repaintRequested()"))

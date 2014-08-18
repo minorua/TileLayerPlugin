@@ -35,6 +35,7 @@ class PropertiesDialog(QDialog):
     self.initBlendingCombo()
     self.ui.horizontalSlider_Transparency.valueChanged.connect(self.sliderChanged)
     self.ui.spinBox_Transparency.valueChanged.connect(self.spinBoxChanged)
+    QObject.connect(self.ui.buttonBox.button(QDialogButtonBox.Apply), SIGNAL("clicked()"), self, SIGNAL("applyClicked()"))
 
     self.ui.textEdit_Properties.setText(layer.metadata())
     self.ui.spinBox_Transparency.setValue(layer.transparency)

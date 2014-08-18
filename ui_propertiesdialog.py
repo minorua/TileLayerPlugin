@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\minorua\.qgis2\python\developing_plugins\TileLayerPlugin\propertiesdialog.ui'
 #
-# Created: Sat Aug 16 16:16:07 2014
+# Created: Mon Aug 18 10:01:09 2014
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -33,7 +33,7 @@ class Ui_Dialog(object):
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Apply|QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout_2.addWidget(self.buttonBox, 3, 0, 1, 1)
         self.groupBox_Style = QtGui.QGroupBox(Dialog)
@@ -107,7 +107,7 @@ class Ui_Dialog(object):
         self.label.setText(_translate("Dialog", "Transparency", None))
         self.label_2.setText(_translate("Dialog", "Blending mode", None))
         self.label_3.setText(_translate("Dialog", "(Default: SourceOver)", None))
-        self.checkBox_SmoothRender.setText(_translate("Dialog", "Smooth pixmap transformation", None))
+        self.checkBox_SmoothRender.setText(_translate("Dialog", "Smooth rendering", None))
         self.checkBox_CreditVisibility.setText(_translate("Dialog", "Place the credit on the bottom right corner", None))
         self.groupBox_Properties.setTitle(_translate("Dialog", "Properties", None))
 
