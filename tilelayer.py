@@ -294,7 +294,7 @@ class TileLayer(QgsPluginLayer):
     extent = tiles.extent()
     topLeft = map2pixel.transform(extent.topLeft().x(), extent.topLeft().y())
     bottomRight = map2pixel.transform(extent.bottomRight().x(), extent.bottomRight().y())
-    rect = QRect(QPoint(round(topLeft.x() * sdx), round(topLeft.y() * sdy)), QPoint(round(bottomRight.x() * sdx), round(bottomRight.y() * sdy)))
+    rect = QRectF(QPointF(topLeft.x() * sdx, topLeft.y() * sdy), QPointF(bottomRight.x() * sdx, bottomRight.y() * sdy))
 
     # draw the image on the map canvas
     renderContext.painter().drawImage(rect, image)
@@ -363,15 +363,16 @@ class TileLayer(QgsPluginLayer):
       p.drawText(10, (i + 1) * textRect.height(), line)
       self.log(line)
 
-  def getTileRect(self, renderContext, zoom, x, y, sdx=1.0, sdy=1.0):
+  def getTileRect(self, renderContext, zoom, x, y, sdx=1.0, sdy=1.0, toInt=True):
     """ get tile pixel rect in the render context """
     r = self.layerDef.getTileRect(zoom, x, y)
     map2pix = renderContext.mapToPixel()
     topLeft = map2pix.transform(r.xMinimum(), r.yMaximum())
     bottomRight = map2pix.transform(r.xMaximum(), r.yMinimum())
-    return QRect(QPoint(round(topLeft.x() * sdx), round(topLeft.y() * sdy)), QPoint(round(bottomRight.x() * sdx), round(bottomRight.y() * sdy)))
-    #return QRectF(QPointF(round(topLeft.x()), round(topLeft.y())), QPointF(round(bottomRight.x()), round(bottomRight.y())))
-    #return QgsRectangle(topLeft, bottomRight)
+    if toInt:
+      return QRect(QPoint(round(topLeft.x() * sdx), round(topLeft.y() * sdy)), QPoint(round(bottomRight.x() * sdx), round(bottomRight.y() * sdy)))
+    else:
+      return QRectF(QPointF(topLeft.x() * sdx, topLeft.y() * sdy), QPointF(bottomRight.x() * sdx, bottomRight.y() * sdy))
 
   def isCurrentCrsSupported(self):
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
