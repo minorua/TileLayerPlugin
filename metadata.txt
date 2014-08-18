@@ -11,8 +11,8 @@
 [general]
 name=TileLayer Plugin
 qgisMinimumVersion=2.0
-description=It's easy to add tile maps onto your map canvas! With this plugin, you can view Pseudo Mercator projected tile maps.
-version=0.30
+description=TileLayerPlugin is a plugin to add a web tile map as a layer onto your map canvas.
+version=0.40
 author=Minoru Akagi
 email=akaginch@gmail.com
 
@@ -22,11 +22,13 @@ email=akaginch@gmail.com
 
 # Uncomment the following line and add your changelog entries:
 changelog=
-    fix "Could not draw" error that occurs in 64-bit QGIS (OSGeo4W64).
-    adapt to multi-thread rendering.
+    - Moved to the web menu.
+    - Moved settings to add layer dialog.
+    - Default range of zoom level was changed to from 0 to 18.
+    - Improvement for print
 
 # tags are comma separated with spaces allowed
-tags=Tile,TMS
+tags=tile,slippy map,tms,web,plugin layer
 
 homepage=https://github.com/minorua/TileLayerPlugin
 tracker=https://github.com/minorua/TileLayerPlugin
@@ -37,4 +39,3 @@ experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version
 deprecated=False
-

@@ -480,7 +480,7 @@ class TileLayer(QgsPluginLayer):
 
     if tick == timeoutTick and self.downloader.unfinishedCount() > 0:
       self.log("fetchFiles timeout")
-      self.showBarMessage("fetchFiles timeout", duration=5)   #DEBUG
+      #self.showBarMessage("fetchFiles timeout", duration=5)   #DEBUG
       self.downloader.abort()
       self.downloader.errorStatus = Downloader.TIMEOUT_ERROR
     files = self.downloader.fetchedFiles
