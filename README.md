@@ -29,6 +29,7 @@ Options
 * zmin, zmax: Minimum/Maximum value of zoom level. Default values: zmin=0, zmax=18.
 * xmin, ymin, xmax, ymax: Layer extent in degrees (longitude/latitude). Note: Valid range of y in Pseudo Mercator projection is from about -85.05 to about 85.05.
 
+Notes
 * You should correctly set zmin, zmax, xmin, ymin, xmax and ymax in order not to send unnecessary requests to tile map servers.
 * You SHOULD obey the Terms of Use of tile map service.
 

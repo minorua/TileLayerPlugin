@@ -70,7 +70,7 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
-    self.useLastZoomForPrint = False
+    self.useLastZoomForPrint = True
     self.canvasLastZoom = 0
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
