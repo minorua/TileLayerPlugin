@@ -25,8 +25,7 @@ changelog=
     - Moved to the web menu.
     - Moved settings to add layer dialog.
     - Default range of zoom level was changed to from 0 to 18.
-    - Improvement for print
-    - Restore previous behavior for print. Print in the same zoom level as preview. (v.0.40.1)
+    - Print quality improvement (v.0.40.2)
 
 # tags are comma separated with spaces allowed
 tags=tile,slippy map,tms,web,plugin layer

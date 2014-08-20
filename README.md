@@ -45,11 +45,13 @@ slope.tsv
 Note: Use tab character to separate fields!
 
 ## ChangeLog
+version 0.40.2
+* Print quality improvement
+
 version 0.40  
 * Moved to the web menu.
 * Moved settings to add layer dialog.
 * Default range of zoom level was changed to [0, 18].
-* Improvement for print
 
 version 0.30  
 * Fixed "Could not draw" error that occurs in 64-bit QGIS (OSGeo4W64).

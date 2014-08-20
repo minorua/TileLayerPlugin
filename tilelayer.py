@@ -70,7 +70,7 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
-    self.useLastZoomForPrint = True
+    self.useLastZoomForPrint = False
     self.canvasLastZoom = 0
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
@@ -123,8 +123,9 @@ class TileLayer(QgsPluginLayer):
     isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == mapSettings.outputDpi()
     if isDpiEqualToCanvas or not self.useLastZoomForPrint:
       # calculate zoom level
-      mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
-      zoom = int(math.ceil(math.log(mpp1 / renderContext.mapToPixel().mapUnitsPerPixel(), 2) + 1))
+      tile_mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
+      viewport_mpp = renderContext.extent().width() / renderContext.painter().viewport().size().width()
+      zoom = int(math.ceil(math.log(tile_mpp1 / viewport_mpp, 2) + 1))
       zoom = max(0, min(zoom, self.layerDef.zmax))
       #zoom = max(self.layerDef.zmin, zoom)
     else:
@@ -354,9 +355,11 @@ class TileLayer(QgsPluginLayer):
     lines.append(" map center: %lf, %lf" % (renderContext.extent().center().x(), renderContext.extent().center().y() ) )
     lines.append(" map size: %f, %f" % (renderContext.extent().width(), renderContext.extent().height() ) )
     lines.append(" canvas size (pixel): %d, %d" % (renderContext.painter().viewport().size().width(), renderContext.painter().viewport().size().height() ) )
+    lines.append(" outputSize (pixel): %d, %d" % (mapSettings.outputSize().width(), mapSettings.outputSize().height() ) )
     lines.append(" logicalDpiX: %f" % renderContext.painter().device().logicalDpiX() )
     lines.append(" outputDpi: %f" % mapSettings.outputDpi() )
     lines.append(" mapToPixel: %s" % renderContext.mapToPixel().showParameters() )
+    lines.append(" meters per pixel: %f" % (renderContext.extent().width() / renderContext.painter().viewport().size().width()))
     p = renderContext.painter()
     textRect = p.boundingRect(QRect(QPoint(0, 0), p.viewport().size()), Qt.AlignLeft, "Q")
     for i, line in enumerate(lines):
