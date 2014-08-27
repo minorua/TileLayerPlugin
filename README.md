@@ -9,7 +9,7 @@ TileLayerPlugin is under the Web menu. Only tile frame layers are listed in the 
 A few layer styles can be changed in the layer properties dialog. You can set sufficient cache size (in kilobytes) in the Network/Cache Settings of the Options dialog in order to make effective use of cache.
 
 ### Limitations
-* Can display only [Slippy Maps](http://wiki.openstreetmap.org/wiki/Slippy_Map) and similar web tile maps that y-axis of the tile matrix is inverted. Tile size should be 256 x 256.
+* Can display only tile maps in the tile format of [Slippy Map](http://wiki.openstreetmap.org/wiki/Slippy_Map) and similar web tile maps that y-axis of the tile matrix is inverted. Tile size should be 256 x 256.
 * Tile layers don't appear when the coordinate reference system is not **EPSG:3857**.
 
 ### Layer definition file format
