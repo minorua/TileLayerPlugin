@@ -100,7 +100,7 @@ class AddLayerDialog(QDialog):
     for i, line in enumerate(lines):
       if line.startswith("#"):
         continue
-      vals = line.split("\t")
+      vals = line.rstrip().split("\t")
       nvals = len(vals)
       try:
         if nvals < 3:
