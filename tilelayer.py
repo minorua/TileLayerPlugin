@@ -43,7 +43,7 @@ class TileLayer(QgsPluginLayer):
   LAYER_TYPE = "TileLayer"
   MAX_TILE_COUNT = 256
 
-  def __init__(self, plugin, layerDef, creditVisibility=1, pseudo_mercator=None):
+  def __init__(self, plugin, layerDef, creditVisibility=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.plugin = plugin
     self.iface = plugin.iface
@@ -61,9 +61,10 @@ class TileLayer(QgsPluginLayer):
       self.setCustomProperty("bbox", layerDef.bbox.toString())
     self.setCustomProperty("creditVisibility", self.creditVisibility)
 
-    if pseudo_mercator is None:
-      pseudo_mercator = QgsCoordinateReferenceSystem(3857)
-    self.setCrs(pseudo_mercator)
+    # create a QgsCoordinateReferenceSystem instance if plugin has no instance yet
+    if plugin.crs3857 is None:
+      plugin.crs3857 = QgsCoordinateReferenceSystem(3857)
+    self.setCrs(plugin.crs3857)
     if layerDef.bbox:
       self.setExtent(BoundingBox.degreesToMercatorMeters(layerDef.bbox).toQgsRectangle())
     else:

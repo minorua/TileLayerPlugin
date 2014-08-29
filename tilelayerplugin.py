@@ -56,7 +56,7 @@ class TileLayerPlugin:
         self.pluginName = self.tr("TileLayerPlugin")
         self.downloadTimeout = int(settings.value("/TileLayerPlugin/timeout", 30, type=int))
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
-
+        self.crs3857 = None
         self.layers = {}
         QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerRemoved(QString)"), self.layerRemoved)
 
@@ -110,13 +110,12 @@ class TileLayerPlugin:
       if not accepted:
         return
 
-      # change crs to EPSG:3857 (WGS 84 / Pseudo-Mercator)
-      pseudo_mercator = QgsCoordinateReferenceSystem(3857)
-      self.setCrs(pseudo_mercator)
+      if self.crs3857 is None:
+        self.crs3857 = QgsCoordinateReferenceSystem(3857)
 
       creditVisibility = dialog.ui.checkBox_CreditVisibility.isChecked()
       for serviceInfo in dialog.selectedServiceInfoList():
-        layer = TileLayer(self, serviceInfo, creditVisibility, pseudo_mercator)
+        layer = TileLayer(self, serviceInfo, creditVisibility)
         if layer.isValid():
           QgsMapLayerRegistry.instance().addMapLayer(layer)
           self.layers[layer.id()] = layer
