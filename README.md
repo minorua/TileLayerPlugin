@@ -10,7 +10,6 @@ A few layer styles can be changed in the layer properties dialog. You can set su
 
 ### Limitations
 * Can display only tile maps in the tile format of [Slippy Map](http://wiki.openstreetmap.org/wiki/Slippy_Map) and similar web tile maps that y-axis of the tile matrix is inverted. Tile size should be 256 x 256.
-* Tile layers don't appear when the coordinate reference system is not **EPSG:3857**.
 
 ### Layer definition file format
 Layer definition file is a text file. Each line has information for a tile layer. Fields are separated with tab character. The file extension is **tsv** and the file encoding is UTF-8.
@@ -45,13 +44,14 @@ slope.tsv
 Note: Use tab character to separate fields!
 
 ## ChangeLog
-version 0.40.2
-* Print quality improvement
+version 0.50-dev  
+* Reprojection support
 
 version 0.40  
 * Moved to the web menu.
 * Moved settings to add layer dialog.
 * Default range of zoom level was changed to [0, 18].
+* Print quality improvement
 
 version 0.30  
 * Fixed "Could not draw" error that occurs in 64-bit QGIS (OSGeo4W64).

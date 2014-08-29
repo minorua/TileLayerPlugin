@@ -112,14 +112,8 @@ class TileLayer(QgsPluginLayer):
       qDebug("Drawing is skipped because map extent is empty.")
       return True
 
-    painter = renderContext.painter()
-    if not self.isCurrentCrsSupported():
-      if self.plugin.navigationMessagesEnabled:
-        msg = self.tr("TileLayer is available in EPSG:3857")
-        self.showBarMessage(msg, QgsMessageBar.INFO, 2)
-      return True
-
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
+    painter = renderContext.painter()
     isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == mapSettings.outputDpi()
     if isDpiEqualToCanvas or not self.useLastZoomForPrint:
       # calculate zoom level
@@ -175,18 +169,10 @@ class TileLayer(QgsPluginLayer):
       # zoom level has been determined
       break
 
+    self.logT("TileLayer.draw: {0} {1} {2} {3} {4}".format(zoom, ulx, uly, lrx, lry))
+
     # save painter state
     painter.save()
-
-    pt = renderContext.mapToPixel().transform(renderContext.extent().xMaximum(), renderContext.extent().yMinimum())
-    scaleX = pt.x() / painter.viewport().size().width()
-    scaleY = pt.y() / painter.viewport().size().height()
-    painter.scale(scaleX, scaleY)
-
-    if debug_mode:
-      self.logT("TileLayer.draw()")
-      qDebug("Bottom-right of extent (pixel): %f, %f" % (pt.x(), pt.y()))   # Top-left is (0, 0)
-      qDebug("Calculated scale: %f, %f" % (scaleX, scaleY))
 
     # set pen and font
     painter.setPen(Qt.black)
@@ -196,7 +182,7 @@ class TileLayer(QgsPluginLayer):
 
     if self.layerDef.serviceUrl[0] == ":":
       painter.setBrush(QBrush(Qt.NoBrush))
-      self.drawDebugInfo(renderContext, zoom, ulx, uly, lrx, lry, 1.0 / scaleX, 1.0 / scaleY)
+      self.drawDebugInfo(renderContext, zoom, ulx, uly, lrx, lry)
     else:
       # create Tiles class object and throw url into it
       tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
@@ -250,8 +236,13 @@ class TileLayer(QgsPluginLayer):
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
       # draw tiles
-      self.drawTiles(renderContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
-      #self.drawTilesDirectly(renderContext, self.tiles, 1.0 / scaleX, 1.0 / scaleY)
+      if self.isProjectCrsWebMercator():
+        # no need to reproject
+        self.drawTiles(renderContext, self.tiles)
+        #self.drawTilesDirectly(renderContext, self.tiles)
+      else:
+        # reproject tiles
+        self.drawTilesOnTheFly(renderContext, self.tiles)
 
       # restore layer style
       painter.setOpacity(oldOpacity)
@@ -293,8 +284,8 @@ class TileLayer(QgsPluginLayer):
     # tile extent to pixel
     map2pixel = renderContext.mapToPixel()
     extent = tiles.extent()
-    topLeft = map2pixel.transform(extent.topLeft().x(), extent.topLeft().y())
-    bottomRight = map2pixel.transform(extent.bottomRight().x(), extent.bottomRight().y())
+    topLeft = map2pixel.transform(extent.xMinimum(), extent.yMaximum())
+    bottomRight = map2pixel.transform(extent.xMaximum(), extent.yMinimum())
     rect = QRectF(QPointF(topLeft.x() * sdx, topLeft.y() * sdy), QPointF(bottomRight.x() * sdx, bottomRight.y() * sdy))
 
     # draw the image on the map canvas
@@ -302,6 +293,66 @@ class TileLayer(QgsPluginLayer):
 
     self.log("Tiles extent: " + str(extent))
     self.log("Draw into canvas rect: " + str(rect))
+
+  def drawTilesOnTheFly(self, renderContext, tiles, sdx=1.0, sdy=1.0):
+    # For now, gdal.Band.ReadAsArray/WriteArray sometimes crash the app at the end of the app in OSGeo4W environment.
+    # Maybe it is due to the version mismatch of linked msvcr.dll between gdal and its python bindings.
+    # So use Band.ReadRaster/WriteRaster and numpy.tostring/fromstring.
+    try:
+      from osgeo import gdal
+      import numpy
+    except:
+      msg = self.tr("Reprojection requires python-gdal and numpy")
+      self.showBarMessage(msg, QgsMessageBar.INFO, 2)
+      return
+
+    transform = renderContext.coordinateTransform()
+    if not transform:
+      return
+
+    # create an image that has the same resolution as the tiles
+    image = tiles.image()
+
+    # tile extent
+    extent = tiles.extent()
+    geotransform = [extent.xMinimum(), extent.width() / image.width(), 0, extent.yMaximum(), 0, -extent.height() / image.height()]
+
+    driver = gdal.GetDriverByName("MEM")
+    tile_ds = driver.Create("", image.width(), image.height(), 4, gdal.GDT_Byte)
+    tile_ds.SetProjection(str(transform.sourceCrs().toWkt()))
+    tile_ds.SetGeoTransform(geotransform)
+
+    # QImage to raster
+    ba = image.bits().asstring(image.numBytes())
+    a = numpy.fromstring(ba, numpy.uint8).reshape((image.width() * image.height(), 4)).transpose()
+    for i in range(4):
+      band = tile_ds.GetRasterBand(i + 1)
+      band.WriteRaster(0, 0, image.width(), image.height(), a[i].tostring())
+
+    # canvas extent
+    m2p = renderContext.mapToPixel()
+    viewport = renderContext.painter().viewport()
+    width = viewport.width()
+    height = viewport.height()
+    extent = QgsRectangle(m2p.toMapCoordinatesF(0, 0), m2p.toMapCoordinatesF(width, height))
+    geotransform = [extent.xMinimum(), extent.width() / width, 0, extent.yMaximum(), 0, -extent.height() / height]
+
+    canvas_ds = driver.Create("", width, height, 4, gdal.GDT_Byte)
+    canvas_ds.SetProjection(str(transform.destCRS().toWkt()))
+    canvas_ds.SetGeoTransform(geotransform)
+
+    # reproject image
+    gdal.ReprojectImage(tile_ds, canvas_ds)
+
+    # raster to QImage
+    a = []
+    for i in range(4):
+      a.append(numpy.fromstring(canvas_ds.GetRasterBand(i + 1).ReadRaster(0, 0, width, height), numpy.uint8))
+    ba = numpy.array(a).transpose().tostring()
+    reprojected_image = QImage(ba, width, height, QImage.Format_ARGB32_Premultiplied)
+
+    # draw the image on the map canvas
+    renderContext.painter().drawImage(viewport, reprojected_image)
 
   def drawTilesDirectly(self, renderContext, tiles, sdx=1.0, sdy=1.0):
     p = renderContext.painter()
@@ -351,10 +402,16 @@ class TileLayer(QgsPluginLayer):
     lines = []
     lines.append("TileLayer")
     lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
-    lines.append(" map extent: %s" % renderContext.extent().toString() )
+    lines.append(" map extent (renderContext): %s" % renderContext.extent().toString() )
     lines.append(" map center: %lf, %lf" % (renderContext.extent().center().x(), renderContext.extent().center().y() ) )
     lines.append(" map size: %f, %f" % (renderContext.extent().width(), renderContext.extent().height() ) )
-    lines.append(" canvas size (pixel): %d, %d" % (renderContext.painter().viewport().size().width(), renderContext.painter().viewport().size().height() ) )
+    lines.append(" map extent (map canvas): %s" % self.iface.mapCanvas().extent().toString() )
+
+    m2p = renderContext.mapToPixel()
+    viewport = renderContext.painter().viewport()
+    mapExtent = QgsRectangle(m2p.toMapCoordinatesF(0, 0), m2p.toMapCoordinatesF(viewport.width(), viewport.height()))
+    lines.append(" map extent (calculated): %s" % mapExtent.toString() )
+    lines.append(" canvas size (pixel): %d, %d" % (viewport.width(), viewport.height() ) )
     lines.append(" outputSize (pixel): %d, %d" % (mapSettings.outputSize().width(), mapSettings.outputSize().height() ) )
     lines.append(" logicalDpiX: %f" % renderContext.painter().device().logicalDpiX() )
     lines.append(" outputDpi: %f" % mapSettings.outputDpi() )
@@ -377,7 +434,7 @@ class TileLayer(QgsPluginLayer):
     else:
       return QRectF(QPointF(topLeft.x() * sdx, topLeft.y() * sdy), QPointF(bottomRight.x() * sdx, bottomRight.y() * sdy))
 
-  def isCurrentCrsSupported(self):
+  def isProjectCrsWebMercator(self):
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     return mapSettings.destinationCrs().postgisSrid() == 3857
 

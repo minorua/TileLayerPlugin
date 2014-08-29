@@ -113,9 +113,8 @@ class Tiles:
 
   def extent(self):
     size = self.TSIZE1 / 2 ** (self.zoom - 1)
-    topLeft = QPointF(self.xmin * size - self.TSIZE1, self.TSIZE1 - self.ymin * size)
-    bottomRight = QPointF((self.xmax + 1) * size - self.TSIZE1, self.TSIZE1 - (self.ymax + 1) * size)
-    return QRectF(topLeft, bottomRight)
+    return QgsRectangle(self.xmin * size - self.TSIZE1, self.TSIZE1 - (self.ymax + 1) * size,
+                        (self.xmax + 1) * size - self.TSIZE1, self.TSIZE1 - self.ymin * size)
 
 class TileServiceInfo:
 
