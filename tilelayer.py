@@ -480,6 +480,12 @@ class TileLayer(QgsPluginLayer):
     element.setAttribute("name", TileLayer.LAYER_TYPE);
     return True
 
+  def readSymbology(self, node, errorMessage):
+    return False
+
+  def writeSymbology(self, node, doc, errorMessage):
+    return False
+
   def metadata(self):
     lines = []
     fmt = u"%s:\t%s"
