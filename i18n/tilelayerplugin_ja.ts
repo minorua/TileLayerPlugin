@@ -138,7 +138,7 @@
     </message>
     <message>
         <location filename="../propertiesdialog.ui" line="103"/>
-        <source>Smooth rendering</source>
+        <source>Smoothing</source>
         <translation>スムージング</translation>
     </message>
 </context>
@@ -153,7 +153,7 @@
 <context>
     <name>TileLayer</name>
     <message>
-        <location filename="../tilelayer.py" line="161"/>
+        <location filename="../tilelayer.py" line="165"/>
         <source>Tile count is over limit ({0}, max={1})</source>
         <translation>タイル数が制限を超えています ({0}, 最大={1})</translation>
     </message>
@@ -163,42 +163,42 @@
         <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="379"/>
+        <location filename="../tilelayer.py" line="453"/>
         <source> {} files failed.</source>
         <translation> {}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="412"/>
+        <location filename="../tilelayer.py" line="486"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="414"/>
+        <location filename="../tilelayer.py" line="488"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="415"/>
+        <location filename="../tilelayer.py" line="489"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="419"/>
+        <location filename="../tilelayer.py" line="493"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="420"/>
+        <location filename="../tilelayer.py" line="494"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="421"/>
+        <location filename="../tilelayer.py" line="495"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="154"/>
+        <location filename="../tilelayer.py" line="133"/>
         <source>Current zoom level ({0}) is smaller than zmin ({1}): {2}</source>
         <translation>現在のズームレベル({0})は最小ズームレベル({1})よりも小さいです: {2}</translation>
     </message>
@@ -213,19 +213,19 @@
         <translation>全{0}ファイルのダウンロードに失敗しました. - {1}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="377"/>
+        <location filename="../tilelayer.py" line="451"/>
         <source>{0} of {1} files downloaded.</source>
         <translation>{1}ファイルのうち{0}ファイルをダウンロードしました.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="116"/>
-        <source>TileLayer is available in EPSG:3857</source>
-        <translation>タイルレイヤはEPSG:3857で利用可能です</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="413"/>
+        <location filename="../tilelayer.py" line="487"/>
         <source>Credit</source>
         <translation>著作権表記</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="306"/>
+        <source>Reprojection requires python-gdal and numpy</source>
+        <translation>投影変換にはpython-gdalとnumpyが必要です</translation>
     </message>
 </context>
 <context>
@@ -241,7 +241,7 @@
         <translation>タイルレイヤプラグイン</translation>
     </message>
     <message>
-        <location filename="../tilelayerplugin.py" line="180"/>
+        <location filename="../tilelayerplugin.py" line="179"/>
         <source>Project CRS has been changed to EPSG:3857.</source>
         <translation>プロジェクトのCRSはEPSG:3857に変更されました.</translation>
     </message>

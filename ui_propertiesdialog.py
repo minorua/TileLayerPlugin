@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\minorua\.qgis2\python\developing_plugins\TileLayerPlugin\propertiesdialog.ui'
 #
-# Created: Mon Aug 18 10:01:09 2014
+# Created: Fri Aug 29 10:39:32 2014
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -107,7 +107,7 @@ class Ui_Dialog(object):
         self.label.setText(_translate("Dialog", "Transparency", None))
         self.label_2.setText(_translate("Dialog", "Blending mode", None))
         self.label_3.setText(_translate("Dialog", "(Default: SourceOver)", None))
-        self.checkBox_SmoothRender.setText(_translate("Dialog", "Smooth rendering", None))
+        self.checkBox_SmoothRender.setText(_translate("Dialog", "Smoothing", None))
         self.checkBox_CreditVisibility.setText(_translate("Dialog", "Place the credit on the bottom right corner", None))
         self.groupBox_Properties.setTitle(_translate("Dialog", "Properties", None))
 

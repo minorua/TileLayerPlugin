@@ -100,7 +100,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_SmoothRender">
           <property name="text">
-           <string>Smooth rendering</string>
+           <string>Smoothing</string>
           </property>
          </widget>
         </item>
