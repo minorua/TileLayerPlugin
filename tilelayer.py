@@ -238,7 +238,7 @@ class TileLayer(QgsPluginLayer):
 
       # draw tiles
       if self.isProjectCrsWebMercator():
-        # no need to reproject
+        # no need to reproject tiles
         self.drawTiles(renderContext, self.tiles)
         #self.drawTilesDirectly(renderContext, self.tiles)
       else:
@@ -252,17 +252,18 @@ class TileLayer(QgsPluginLayer):
 
       # draw credit on the bottom right corner
       if self.creditVisibility and self.layerDef.credit:
-        margin, paddingH, paddingV = (5, 4, 3)
-        canvasSize = painter.viewport().size()
-        rect = QRect(0, 0, canvasSize.width() - margin, canvasSize.height() - margin)
+        margin, paddingH, paddingV = (3, 4, 3)
+        extent = renderContext.extent()
+        if renderContext.coordinateTransform():
+          extent = renderContext.coordinateTransform().transformBoundingBox(extent)
+        m2p = renderContext.mapToPixel()
+        topLeft = m2p.transform(extent.xMinimum(), extent.yMaximum())
+        bottomRight = m2p.transform(extent.xMaximum(), extent.yMinimum())
+        rect = QRectF(QPointF(topLeft.x(), topLeft.y()), QPointF(bottomRight.x() - margin, bottomRight.y() - margin))
         textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
         painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
-
-        if debug_mode:
-          #painter.fillRect(rect, QColor(240, 240, 240, 200))
-          qDebug("credit text rect: " + str(textRect))
 
     if 0: #debug_mode:
       # draw plugin icon
@@ -353,7 +354,8 @@ class TileLayer(QgsPluginLayer):
     reprojected_image = QImage(ba, width, height, QImage.Format_ARGB32_Premultiplied)
 
     # draw the image on the map canvas
-    renderContext.painter().drawImage(viewport, reprojected_image)
+    rect = QRectF(QPointF(0, 0), QPointF(viewport.width() * sdx, viewport.height() * sdy))
+    renderContext.painter().drawImage(rect, reprojected_image)
 
   def drawTilesDirectly(self, renderContext, tiles, sdx=1.0, sdy=1.0):
     p = renderContext.painter()
@@ -365,7 +367,7 @@ class TileLayer(QgsPluginLayer):
         image.loadFromData(tile.data)
         p.drawImage(rect, image)
 
-  def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy):
+  def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry, sdx=1.0, sdy=1.0):
     if "frame" in self.layerDef.serviceUrl:
       self.drawFrames(renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy)
     if "number" in self.layerDef.serviceUrl:
@@ -399,30 +401,60 @@ class TileLayer(QgsPluginLayer):
         self.drawNumber(renderContext, zoom, x, y, sdx, sdy)
 
   def drawInfo(self, renderContext, zoom, xmin, ymin, xmax, ymax):
+    # debug information
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     lines = []
     lines.append("TileLayer")
     lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
-    lines.append(" map extent (renderContext): %s" % renderContext.extent().toString() )
-    lines.append(" map center: %lf, %lf" % (renderContext.extent().center().x(), renderContext.extent().center().y() ) )
-    lines.append(" map size: %f, %f" % (renderContext.extent().width(), renderContext.extent().height() ) )
+    extent = renderContext.extent()
+    lines.append(" map extent (renderContext): %s" % extent.toString() )
+    lines.append(" map center: %lf, %lf" % (extent.center().x(), extent.center().y() ) )
+    lines.append(" map size: %f, %f" % (extent.width(), extent.height() ) )
     lines.append(" map extent (map canvas): %s" % self.iface.mapCanvas().extent().toString() )
-
     m2p = renderContext.mapToPixel()
-    viewport = renderContext.painter().viewport()
+    painter = renderContext.painter()
+    viewport = painter.viewport()
     mapExtent = QgsRectangle(m2p.toMapCoordinatesF(0, 0), m2p.toMapCoordinatesF(viewport.width(), viewport.height()))
     lines.append(" map extent (calculated): %s" % mapExtent.toString() )
-    lines.append(" canvas size (pixel): %d, %d" % (viewport.width(), viewport.height() ) )
+    lines.append(" viewport size (pixel): %d, %d" % (viewport.width(), viewport.height() ) )
+    lines.append(" window size (pixel): %d, %d" % (painter.window().width(), painter.window().height() ) )
     lines.append(" outputSize (pixel): %d, %d" % (mapSettings.outputSize().width(), mapSettings.outputSize().height() ) )
-    lines.append(" logicalDpiX: %f" % renderContext.painter().device().logicalDpiX() )
+    device = painter.device()
+    lines.append(" deviceSize (pixel): %f, %f" % (device.width(), device.height() ) )
+    lines.append(" logicalDpi: %f, %f" % (device.logicalDpiX(), device.logicalDpiY()))
     lines.append(" outputDpi: %f" % mapSettings.outputDpi() )
-    lines.append(" mapToPixel: %s" % renderContext.mapToPixel().showParameters() )
-    lines.append(" meters per pixel: %f" % (renderContext.extent().width() / renderContext.painter().viewport().size().width()))
-    p = renderContext.painter()
-    textRect = p.boundingRect(QRect(QPoint(0, 0), p.viewport().size()), Qt.AlignLeft, "Q")
+    lines.append(" mapToPixel: %s" % m2p.showParameters() )
+    lines.append(" meters per pixel: %f" % (extent.width() / viewport.width()))
+    lines.append(" scaleFactor: %f" % renderContext.scaleFactor())
+    lines.append(" rendererScale: %f" % renderContext.rendererScale())
+
+    pt = m2p.transform(extent.xMaximum(), extent.yMinimum())
+    scaleX = pt.x() / viewport.width()
+    scaleY = pt.y() / viewport.height()
+    lines.append(" scale: %f, %f" % (scaleX, scaleY))
+
+    # draw information
+    textRect = painter.boundingRect(QRect(QPoint(0, 0), viewport.size()), Qt.AlignLeft, "Q")
     for i, line in enumerate(lines):
-      p.drawText(10, (i + 1) * textRect.height(), line)
+      painter.drawText(10, (i + 1) * textRect.height(), line)
       self.log(line)
+
+    # diagonal
+    if renderContext.coordinateTransform():
+      extent = renderContext.coordinateTransform().transformBoundingBox(extent)
+    topLeft = m2p.transform(extent.xMinimum(), extent.yMaximum())
+    bottomRight = m2p.transform(extent.xMaximum(), extent.yMinimum())
+    painter.drawLine(QPointF(topLeft.x(), topLeft.y()), QPointF(bottomRight.x(), bottomRight.y()))
+    painter.drawLine(QPointF(bottomRight.x(), topLeft.y()), QPointF(topLeft.x(), bottomRight.y()))
+
+    # credit label
+    margin, paddingH, paddingV = (3, 4, 3)
+    credit = "This is credit"
+    rect = QRectF(QPointF(topLeft.x(), topLeft.y()), QPointF(bottomRight.x() - margin, bottomRight.y() - margin))
+    textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, credit)
+    bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
+    painter.drawRect(bgRect)
+    painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, credit)
 
   def getTileRect(self, renderContext, zoom, x, y, sdx=1.0, sdy=1.0, toInt=True):
     """ get tile pixel rect in the render context """
