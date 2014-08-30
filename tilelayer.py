@@ -170,6 +170,15 @@ class TileLayer(QgsPluginLayer):
       # zoom level has been determined
       break
 
+
+    # frame isn't drawn not in web mercator
+    isWebMercator = self.isProjectCrsWebMercator()
+    if not isWebMercator and self.layerDef.serviceUrl[0] == ":":
+      if "frame" in self.layerDef.serviceUrl:   # or "number" in self.layerDef.serviceUrl:
+        msg = self.tr("Frame layer is drawn only in EPSG:3857")
+        self.showBarMessage(msg, QgsMessageBar.INFO, 2)
+        return True
+
     self.logT("TileLayer.draw: {0} {1} {2} {3} {4}".format(zoom, ulx, uly, lrx, lry))
 
     # save painter state
@@ -237,7 +246,7 @@ class TileLayer(QgsPluginLayer):
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
       # draw tiles
-      if self.isProjectCrsWebMercator():
+      if isWebMercator:
         # no need to reproject tiles
         self.drawTiles(renderContext, self.tiles)
         #self.drawTilesDirectly(renderContext, self.tiles)
