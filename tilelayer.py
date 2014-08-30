@@ -109,8 +109,8 @@ class TileLayer(QgsPluginLayer):
 
   def draw(self, renderContext):
     self.renderContext = renderContext
-    if renderContext.extent().isEmpty():
-      qDebug("Drawing is skipped because map extent is empty.")
+    if renderContext.extent().isEmpty() or renderContext.extent().width() == float("inf"):
+      qDebug("Drawing is skipped because map extent is empty or inf.")
       return True
 
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
