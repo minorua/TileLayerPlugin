@@ -40,6 +40,7 @@ class AddLayerDialog(QDialog):
     self.ui.pushButton_Add.clicked.connect(self.accept)
     self.ui.pushButton_Close.clicked.connect(self.reject)
     self.ui.pushButton_Settings.clicked.connect(self.settingsClicked)
+    self.ui.treeView.doubleClicked.connect(self.treeItemDoubleClicked)
     self.setupTreeView()
 
   def setupTreeView(self):
@@ -139,3 +140,7 @@ class AddLayerDialog(QDialog):
   def settingsClicked(self):
     if self.plugin.settings():
       self.setupTreeView()
+
+  def treeItemDoubleClicked(self, index):
+    if len(self.selectedServiceInfoList()) > 0:
+      self.accept()
