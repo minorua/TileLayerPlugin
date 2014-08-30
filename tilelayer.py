@@ -109,17 +109,18 @@ class TileLayer(QgsPluginLayer):
 
   def draw(self, renderContext):
     self.renderContext = renderContext
-    if renderContext.extent().isEmpty() or renderContext.extent().width() == float("inf"):
+    extent = renderContext.extent()
+    if extent.isEmpty() or extent.width() == float("inf"):
       qDebug("Drawing is skipped because map extent is empty or inf.")
       return True
 
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     painter = renderContext.painter()
-    isDpiEqualToCanvas = renderContext.painter().device().logicalDpiX() == mapSettings.outputDpi()
+    isDpiEqualToCanvas = painter.device().logicalDpiX() == mapSettings.outputDpi()
     if isDpiEqualToCanvas or not self.useLastZoomForPrint:
       # calculate zoom level
       tile_mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
-      viewport_mpp = renderContext.extent().width() / renderContext.painter().viewport().size().width()
+      viewport_mpp = extent.width() / painter.viewport().width()
       zoom = int(math.ceil(math.log(tile_mpp1 / viewport_mpp, 2) + 1))
       zoom = max(0, min(zoom, self.layerDef.zmax))
       #zoom = max(self.layerDef.zmin, zoom)
@@ -138,10 +139,10 @@ class TileLayer(QgsPluginLayer):
       # calculate tile range (yOrigin is top)
       size = self.layerDef.TSIZE1 / 2 ** (zoom - 1)
       matrixSize = 2 ** zoom
-      ulx = max(0, int((renderContext.extent().xMinimum() + self.layerDef.TSIZE1) / size))
-      uly = max(0, int((self.layerDef.TSIZE1 - renderContext.extent().yMaximum()) / size))
-      lrx = min(int((renderContext.extent().xMaximum() + self.layerDef.TSIZE1) / size), matrixSize - 1)
-      lry = min(int((self.layerDef.TSIZE1 - renderContext.extent().yMinimum()) / size), matrixSize - 1)
+      ulx = max(0, int((extent.xMinimum() + self.layerDef.TSIZE1) / size))
+      uly = max(0, int((self.layerDef.TSIZE1 - extent.yMaximum()) / size))
+      lrx = min(int((extent.xMaximum() + self.layerDef.TSIZE1) / size), matrixSize - 1)
+      lry = min(int((self.layerDef.TSIZE1 - extent.yMinimum()) / size), matrixSize - 1)
 
       # bounding box limit
       if self.layerDef.bbox:
