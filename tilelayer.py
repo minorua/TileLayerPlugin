@@ -263,13 +263,15 @@ class TileLayer(QgsPluginLayer):
       # draw credit on the bottom right corner
       if self.creditVisibility and self.layerDef.credit:
         margin, paddingH, paddingV = (3, 4, 3)
-        extent = renderContext.extent()
+        # scale
         if renderContext.coordinateTransform():
           extent = renderContext.coordinateTransform().transformBoundingBox(extent)
-        m2p = renderContext.mapToPixel()
-        topLeft = m2p.transform(extent.xMinimum(), extent.yMaximum())
-        bottomRight = m2p.transform(extent.xMaximum(), extent.yMinimum())
-        rect = QRectF(QPointF(topLeft.x(), topLeft.y()), QPointF(bottomRight.x() - margin, bottomRight.y() - margin))
+        bottomRight = renderContext.mapToPixel().transform(extent.xMaximum(), extent.yMinimum())
+        scaleX = bottomRight.x() / painter.viewport().width()
+        scaleY = bottomRight.y() / painter.viewport().height()
+        painter.scale(scaleX, scaleY)
+
+        rect = QRect(0, 0, painter.viewport().width() - margin, painter.viewport().height() - margin)
         textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
@@ -377,11 +379,20 @@ class TileLayer(QgsPluginLayer):
         image.loadFromData(tile.data)
         p.drawImage(rect, image)
 
-  def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry, sdx=1.0, sdy=1.0):
+  def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry):
+    painter = renderContext.painter()
+    extent = renderContext.extent()
+    if renderContext.coordinateTransform():
+      extent = renderContext.coordinateTransform().transformBoundingBox(extent)
+    bottomRight = renderContext.mapToPixel().transform(extent.xMaximum(), extent.yMinimum())
+    scaleX = bottomRight.x() / painter.viewport().width()
+    scaleY = bottomRight.y() / painter.viewport().height()
+    painter.scale(scaleX, scaleY)
+
     if "frame" in self.layerDef.serviceUrl:
-      self.drawFrames(renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy)
+      self.drawFrames(renderContext, zoom, ulx, uly, lrx, lry, 1.0 / scaleX, 1.0 / scaleY)
     if "number" in self.layerDef.serviceUrl:
-      self.drawNumbers(renderContext, zoom, ulx, uly, lrx, lry, sdx, sdy)
+      self.drawNumbers(renderContext, zoom, ulx, uly, lrx, lry, 1.0 / scaleX, 1.0 / scaleY)
     if "info" in self.layerDef.serviceUrl:
       self.drawInfo(renderContext, zoom, ulx, uly, lrx, lry)
 
@@ -438,9 +449,11 @@ class TileLayer(QgsPluginLayer):
     lines.append(" scaleFactor: %f" % renderContext.scaleFactor())
     lines.append(" rendererScale: %f" % renderContext.rendererScale())
 
-    pt = m2p.transform(extent.xMaximum(), extent.yMinimum())
-    scaleX = pt.x() / viewport.width()
-    scaleY = pt.y() / viewport.height()
+    if renderContext.coordinateTransform():
+      extent = renderContext.coordinateTransform().transformBoundingBox(extent)
+    bottomRight = renderContext.mapToPixel().transform(extent.xMaximum(), extent.yMinimum())
+    scaleX = bottomRight.x() / painter.viewport().width()
+    scaleY = bottomRight.y() / painter.viewport().height()
     lines.append(" scale: %f, %f" % (scaleX, scaleY))
 
     # draw information
@@ -450,17 +463,13 @@ class TileLayer(QgsPluginLayer):
       self.log(line)
 
     # diagonal
-    if renderContext.coordinateTransform():
-      extent = renderContext.coordinateTransform().transformBoundingBox(extent)
-    topLeft = m2p.transform(extent.xMinimum(), extent.yMaximum())
-    bottomRight = m2p.transform(extent.xMaximum(), extent.yMinimum())
-    painter.drawLine(QPointF(topLeft.x(), topLeft.y()), QPointF(bottomRight.x(), bottomRight.y()))
-    painter.drawLine(QPointF(bottomRight.x(), topLeft.y()), QPointF(topLeft.x(), bottomRight.y()))
+    painter.drawLine(QPointF(0, 0), QPointF(painter.viewport().width(), painter.viewport().height()))
+    painter.drawLine(QPointF(painter.viewport().width(), 0), QPointF(0, painter.viewport().height()))
 
     # credit label
     margin, paddingH, paddingV = (3, 4, 3)
     credit = "This is credit"
-    rect = QRectF(QPointF(topLeft.x(), topLeft.y()), QPointF(bottomRight.x() - margin, bottomRight.y() - margin))
+    rect = QRect(0, 0, painter.viewport().width() - margin, painter.viewport().height() - margin)
     textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, credit)
     bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
     painter.drawRect(bgRect)
