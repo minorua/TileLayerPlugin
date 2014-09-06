@@ -36,7 +36,7 @@ class TileDefaultSettings:
 def degreesToMercatorMeters(lon, lat):
   # formula: http://en.wikipedia.org/wiki/Mercator_projection#Mathematics_of_the_Mercator_projection
   x = R * lon * math.pi / 180
-  y = R * math.log(math.tan(math.pi / 4 + (lat * math.pi / 180) / 2))
+  y = R * math.log(math.tan((90 + lat) * math.pi / 360))
   return x, y
 
 class BoundingBox:
