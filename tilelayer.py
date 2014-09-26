@@ -332,16 +332,13 @@ class TileLayer(QgsPluginLayer):
     geotransform = [extent.xMinimum(), extent.width() / image.width(), 0, extent.yMaximum(), 0, -extent.height() / image.height()]
 
     driver = gdal.GetDriverByName("MEM")
-    tile_ds = driver.Create("", image.width(), image.height(), 4, gdal.GDT_Byte)
+    tile_ds = driver.Create("", image.width(), image.height(), 1, gdal.GDT_UInt32)
     tile_ds.SetProjection(str(transform.sourceCrs().toWkt()))
     tile_ds.SetGeoTransform(geotransform)
 
     # QImage to raster
     ba = image.bits().asstring(image.numBytes())
-    a = numpy.fromstring(ba, numpy.uint8).reshape((image.width() * image.height(), 4)).transpose()
-    for i in range(4):
-      band = tile_ds.GetRasterBand(i + 1)
-      band.WriteRaster(0, 0, image.width(), image.height(), a[i].tostring())
+    tile_ds.GetRasterBand(1).WriteRaster(0, 0, image.width(), image.height(), ba)
 
     # canvas extent
     m2p = renderContext.mapToPixel()
@@ -351,7 +348,7 @@ class TileLayer(QgsPluginLayer):
     extent = QgsRectangle(m2p.toMapCoordinatesF(0, 0), m2p.toMapCoordinatesF(width, height))
     geotransform = [extent.xMinimum(), extent.width() / width, 0, extent.yMaximum(), 0, -extent.height() / height]
 
-    canvas_ds = driver.Create("", width, height, 4, gdal.GDT_Byte)
+    canvas_ds = driver.Create("", width, height, 1, gdal.GDT_UInt32)
     canvas_ds.SetProjection(str(transform.destCRS().toWkt()))
     canvas_ds.SetGeoTransform(geotransform)
 
@@ -359,10 +356,7 @@ class TileLayer(QgsPluginLayer):
     gdal.ReprojectImage(tile_ds, canvas_ds)
 
     # raster to QImage
-    a = []
-    for i in range(4):
-      a.append(numpy.fromstring(canvas_ds.GetRasterBand(i + 1).ReadRaster(0, 0, width, height), numpy.uint8))
-    ba = numpy.array(a).transpose().tostring()
+    ba = canvas_ds.GetRasterBand(1).ReadRaster(0, 0, width, height)
     reprojected_image = QImage(ba, width, height, QImage.Format_ARGB32_Premultiplied)
 
     # draw the image on the map canvas
