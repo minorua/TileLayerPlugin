@@ -24,11 +24,18 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import QgsMessageBar
-import os
 import math
+import os
+import threading
+
 from tiles import *
 from downloader import Downloader
-import threading
+
+try:
+  from osgeo import gdal
+  hasGdal = True
+except:
+  hasGdal = False
 
 debug_mode = 1
 
@@ -309,14 +316,8 @@ class TileLayer(QgsPluginLayer):
     self.log("Draw into canvas rect: " + str(rect))
 
   def drawTilesOnTheFly(self, renderContext, tiles, sdx=1.0, sdy=1.0):
-    # For now, gdal.Band.ReadAsArray/WriteArray sometimes crash the app at the end of the app in OSGeo4W environment.
-    # Maybe it is due to the version mismatch of linked msvcr.dll between gdal and its python bindings.
-    # So use Band.ReadRaster/WriteRaster and numpy.tostring/fromstring.
-    try:
-      from osgeo import gdal
-      import numpy
-    except:
-      msg = self.tr("Reprojection requires python-gdal and numpy")
+    if not hasGdal:
+      msg = self.tr("Reprojection requires python-gdal")
       self.showBarMessage(msg, QgsMessageBar.INFO, 2)
       return
 
