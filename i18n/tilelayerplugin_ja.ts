@@ -4,47 +4,47 @@
 <context>
     <name>AddLayerDialog</name>
     <message>
-        <location filename="../addlayerdialog.py" line="48"/>
+        <location filename="../addlayerdialog.py" line="49"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="48"/>
+        <location filename="../addlayerdialog.py" line="49"/>
         <source>Url</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="48"/>
+        <location filename="../addlayerdialog.py" line="49"/>
         <source>Zoom</source>
         <translation>ズーム</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="48"/>
+        <location filename="../addlayerdialog.py" line="49"/>
         <source>Extent</source>
         <translation>範囲</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="48"/>
+        <location filename="../addlayerdialog.py" line="49"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="122"/>
+        <location filename="../addlayerdialog.py" line="123"/>
         <source>TileLayerPlugin</source>
         <translation>タイルレイヤプラグイン</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="122"/>
+        <location filename="../addlayerdialog.py" line="123"/>
         <source>Invalid line format: {} line {}</source>
         <translation>不正な行フォーマットです: {} line {}</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="48"/>
+        <location filename="../addlayerdialog.py" line="49"/>
         <source>Credit</source>
         <translation>著作権表記</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.py" line="94"/>
+        <location filename="../addlayerdialog.py" line="95"/>
         <source>Fail to read {0}: {1}</source>
         <translation>{0}の読み込みに失敗しました: {1}</translation>
     </message>
@@ -62,12 +62,12 @@
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.ui" line="64"/>
+        <location filename="../addlayerdialog.ui" line="67"/>
         <source>Add</source>
         <translation>追加</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.ui" line="74"/>
+        <location filename="../addlayerdialog.ui" line="77"/>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>
@@ -117,7 +117,7 @@
         <translation>ナビゲーションメッセージを表示する</translation>
     </message>
     <message>
-        <location filename="../addlayerdialog.ui" line="44"/>
+        <location filename="../addlayerdialog.ui" line="47"/>
         <source>Settings</source>
         <translation>設定</translation>
     </message>
@@ -148,84 +148,84 @@
 <context>
     <name>TileLayer</name>
     <message>
-        <location filename="../tilelayer.py" line="165"/>
+        <location filename="../tilelayer.py" line="173"/>
         <source>Tile count is over limit ({0}, max={1})</source>
         <translation>タイル数が制限を超えています ({0}, 最大={1})</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="228"/>
+        <location filename="../tilelayer.py" line="236"/>
         <source>{0} files downloaded. {1} caches hit.</source>
         <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="494"/>
+        <location filename="../tilelayer.py" line="499"/>
         <source> {} files failed.</source>
         <translation> {}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="533"/>
+        <location filename="../tilelayer.py" line="538"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="535"/>
+        <location filename="../tilelayer.py" line="540"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="536"/>
+        <location filename="../tilelayer.py" line="541"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="540"/>
+        <location filename="../tilelayer.py" line="545"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="541"/>
+        <location filename="../tilelayer.py" line="546"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="542"/>
+        <location filename="../tilelayer.py" line="547"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="133"/>
+        <location filename="../tilelayer.py" line="141"/>
         <source>Current zoom level ({0}) is smaller than zmin ({1}): {2}</source>
         <translation>現在のズームレベル({0})は最小ズームレベル({1})よりも小さいです: {2}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="232"/>
+        <location filename="../tilelayer.py" line="240"/>
         <source>Download Timeout - {}</source>
         <translation>ダウンロードがタイムアウトしました - {}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="236"/>
+        <location filename="../tilelayer.py" line="244"/>
         <source>Failed to download all {0} files. - {1}</source>
         <translation>全{0}ファイルのダウンロードに失敗しました. - {1}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="492"/>
+        <location filename="../tilelayer.py" line="497"/>
         <source>{0} of {1} files downloaded.</source>
         <translation>{1}ファイルのうち{0}ファイルをダウンロードしました.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="534"/>
+        <location filename="../tilelayer.py" line="539"/>
         <source>Credit</source>
         <translation>著作権表記</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="316"/>
-        <source>Reprojection requires python-gdal and numpy</source>
-        <translation>投影変換にはpython-gdalとnumpyが必要です</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="178"/>
+        <location filename="../tilelayer.py" line="186"/>
         <source>Frame layer is drawn only in EPSG:3857</source>
         <translation>フレームレイヤは座標参照系がEPSG:3857でなければ描かれません</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="320"/>
+        <source>Reprojection requires python-gdal</source>
+        <translation>投影変換にはpython-gdalが必要です</translation>
     </message>
 </context>
 <context>
