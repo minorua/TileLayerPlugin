@@ -43,6 +43,9 @@ slope.tsv
 
 Note: Use tab character to separate fields!
 
+## Known issue(s)
+* Credit label is not printed in the correct position in some projections. No problem in the Mercator projection.
+
 ## ChangeLog
 version 0.50-dev  
 * Reprojection support

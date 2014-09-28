@@ -271,11 +271,7 @@ class TileLayer(QgsPluginLayer):
       if self.creditVisibility and self.layerDef.credit:
         margin, paddingH, paddingV = (3, 4, 3)
         # scale
-        if renderContext.coordinateTransform():
-          extent = renderContext.coordinateTransform().transformBoundingBox(extent)
-        bottomRight = renderContext.mapToPixel().transform(extent.xMaximum(), extent.yMinimum())
-        scaleX = bottomRight.x() / painter.viewport().width()
-        scaleY = bottomRight.y() / painter.viewport().height()
+        scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
         painter.scale(scaleX, scaleY)
 
         rect = QRect(0, 0, painter.viewport().width() - margin, painter.viewport().height() - margin)
@@ -376,12 +372,7 @@ class TileLayer(QgsPluginLayer):
 
   def drawDebugInfo(self, renderContext, zoom, ulx, uly, lrx, lry):
     painter = renderContext.painter()
-    extent = renderContext.extent()
-    if renderContext.coordinateTransform():
-      extent = renderContext.coordinateTransform().transformBoundingBox(extent)
-    bottomRight = renderContext.mapToPixel().transform(extent.xMaximum(), extent.yMinimum())
-    scaleX = bottomRight.x() / painter.viewport().width()
-    scaleY = bottomRight.y() / painter.viewport().height()
+    scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
     painter.scale(scaleX, scaleY)
 
     if "frame" in self.layerDef.serviceUrl:
@@ -443,12 +434,7 @@ class TileLayer(QgsPluginLayer):
     lines.append(" meters per pixel: %f" % (extent.width() / viewport.width()))
     lines.append(" scaleFactor: %f" % renderContext.scaleFactor())
     lines.append(" rendererScale: %f" % renderContext.rendererScale())
-
-    if renderContext.coordinateTransform():
-      extent = renderContext.coordinateTransform().transformBoundingBox(extent)
-    bottomRight = renderContext.mapToPixel().transform(extent.xMaximum(), extent.yMinimum())
-    scaleX = bottomRight.x() / painter.viewport().width()
-    scaleY = bottomRight.y() / painter.viewport().height()
+    scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
     lines.append(" scale: %f, %f" % (scaleX, scaleY))
 
     # draw information
@@ -469,6 +455,33 @@ class TileLayer(QgsPluginLayer):
     bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
     painter.drawRect(bgRect)
     painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, credit)
+
+  def getScaleToVisibleExtent(self, renderContext):
+    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
+    painter = renderContext.painter()
+    if painter.device().logicalDpiX() == mapSettings.outputDpi():
+      return 1.0, 1.0   # scale should be 1.0 in rendering on map canvas
+
+    extent = renderContext.extent()
+    ct = renderContext.coordinateTransform()
+    if ct:
+      # FIX ME: want to get original visible extent in project CRS or visible view size in pixels
+
+      #extent = ct.transformBoundingBox(extent)
+      #xmax, ymin = extent.xMaximum(), extent.yMinimum()
+
+      pt1 = ct.transform(extent.xMaximum(), extent.yMaximum())
+      pt2 = ct.transform(extent.xMaximum(), extent.yMinimum())
+      pt3 = ct.transform(extent.xMinimum(), extent.yMinimum())
+      xmax, ymin = min(pt1.x(), pt2.x()), max(pt2.y(), pt3.y())
+    else:
+      xmax, ymin = extent.xMaximum(), extent.yMinimum()
+
+    bottomRight = renderContext.mapToPixel().transform(xmax, ymin)
+    viewport = painter.viewport()
+    scaleX = bottomRight.x() / viewport.width()
+    scaleY = bottomRight.y() / viewport.height()
+    return scaleX, scaleY
 
   def getTileRect(self, renderContext, zoom, x, y, sdx=1.0, sdy=1.0, toInt=True):
     """ get tile pixel rect in the render context """
