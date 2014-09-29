@@ -29,7 +29,7 @@ Options
 * xmin, ymin, xmax, ymax: Layer extent in degrees (longitude/latitude). Note: Valid range of y in Pseudo Mercator projection is from about -85.05 to about 85.05.
 
 Notes
-* You should correctly set zmin, zmax, xmin, ymin, xmax and ymax in order not to send unnecessary requests to tile map servers.
+* You should correctly set zmin, zmax, xmin, ymin, xmax and ymax in order not to send requests for absent tiles to the server.
 * You SHOULD obey the Terms of Use of tile map service.
 
 ### Examples of layer definition file
@@ -47,7 +47,7 @@ Note: Use tab character to separate fields!
 * Credit label is not printed in the correct position in some projections. No problem in the Mercator projection.
 
 ## ChangeLog
-version 0.50-dev  
+version 0.50  
 * Reprojection support
 
 version 0.40  
