@@ -272,9 +272,12 @@ class TileLayer(QgsPluginLayer):
         margin, paddingH, paddingV = (3, 4, 3)
         # scale
         scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
-        painter.scale(scaleX, scaleY)
+        scale = max(scaleX, scaleY)
+        painter.scale(scale, scale)
 
-        rect = QRect(0, 0, painter.viewport().width() - margin, painter.viewport().height() - margin)
+        visibleSWidth = painter.viewport().width() * scaleX / scale
+        visibleSHeight = painter.viewport().height() * scaleY / scale
+        rect = QRect(0, 0, visibleSWidth - margin, visibleSHeight - margin)
         textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
