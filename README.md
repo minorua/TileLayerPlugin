@@ -47,6 +47,9 @@ Note: Use tab character to separate fields!
 * Credit label is not printed in the correct position in some projections. No problem in the Mercator projection.
 
 ## ChangeLog
+version 0.50.1  
+* TileLayerPlugin doesn't support map rotation now. Shows message and does not render tiles if map canvas is rotated.
+
 version 0.50  
 * Reprojection support
 
