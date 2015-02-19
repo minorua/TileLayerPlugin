@@ -36,6 +36,7 @@ class TileLayerPlugin:
 
     def __init__(self, iface):
         self.apiChanged23 = QGis.QGIS_VERSION_INT >= 20300
+        self.apiChanged27 = QGis.QGIS_VERSION_INT >= 20700
 
         # Save reference to the QGIS interface
         self.iface = iface

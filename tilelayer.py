@@ -122,6 +122,12 @@ class TileLayer(QgsPluginLayer):
       return True
 
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
+    if self.plugin.apiChanged27 and mapSettings.rotation():
+      if self.plugin.navigationMessagesEnabled:
+        msg = self.tr("TileLayerPlugin doesn't support map rotation.")
+        self.showBarMessage(msg, QgsMessageBar.INFO, 2)
+      return True
+
     painter = renderContext.painter()
     isDpiEqualToCanvas = painter.device().logicalDpiX() == mapSettings.outputDpi()
     if isDpiEqualToCanvas or not self.useLastZoomForPrint:
