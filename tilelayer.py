@@ -264,14 +264,15 @@ class TileLayer(QgsPluginLayer):
 
         if self.iface:
           stats = self.downloader.stats()
-          msg = self.tr("{0} files downloaded. {1} caches hit.").format(stats["downloaded"], cacheHits + stats["cacheHits"])
+          allCacheHits = cacheHits + stats["cacheHits"]
+          msg = self.tr("{0} files downloaded. {1} caches hit.").format(stats["downloaded"], allCacheHits)
           barmsg = None
           if self.downloader.errorStatus != Downloader.NO_ERROR:
             if self.downloader.errorStatus == Downloader.TIMEOUT_ERROR:
               barmsg = self.tr("Download Timeout - {0}").format(self.name())
             else:
               msg += self.tr(" {0} files failed.").format(stats["errors"])
-              if stats["successed"] == 0:   #TODO: do not warn if there are downloaded files
+              if stats["successed"] + allCacheHits == 0:
                 barmsg = self.tr("Failed to download all {0} files. - {1}").format(stats["errors"], self.name())
           self.showStatusMessage(msg, 5000)
           if barmsg:
