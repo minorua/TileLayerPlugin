@@ -84,10 +84,12 @@ class TileLayer(QgsPluginLayer):
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
     self.setSmoothRender(LayerDefaultSettings.SMOOTH_RENDER)
 
-    self.downloader = Downloader(self)
-    self.downloader.userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION) # not written since QGIS 2.2
-    self.downloader.DEFAULT_CACHE_EXPIRATION = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
-    QObject.connect(self.downloader, SIGNAL("replyFinished(QString, int, int)"), self.networkReplyFinished)
+    maxConnections = 2
+    cacheExpiry = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
+    userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION)   # will be overwritten in QgsNetworkAccessManager::createRequest() since 2.2
+    self.downloader = Downloader(self, maxConnections, cacheExpiry, userAgent)
+    if self.iface:
+      self.downloader.replyFinished.connect(self.networkReplyFinished)
 
     # multi-thread rendering
     self.eventLoop = None
@@ -223,7 +225,7 @@ class TileLayer(QgsPluginLayer):
             urls.append(url)
           elif data:      # memory cache exists
             cacheHits += 1
-          #else:    # tile was not found (Downloader.NOT_FOUND=0)
+          #else:    # tile not found
 
       self.tiles = tiles
       if len(urls) > 0:
@@ -237,17 +239,16 @@ class TileLayer(QgsPluginLayer):
           self.tiles.setImageData(url, files[url])
 
         if self.iface:
-          cacheHits += self.downloader.cacheHits
-          downloadedCount = self.downloader.fetchSuccesses - self.downloader.cacheHits
-          msg = self.tr("{0} files downloaded. {1} caches hit.").format(downloadedCount, cacheHits)
+          stats = self.downloader.stats()
+          msg = self.tr("{0} files downloaded. {1} caches hit.").format(stats["downloaded"], cacheHits + stats["cacheHits"])
           barmsg = None
           if self.downloader.errorStatus != Downloader.NO_ERROR:
             if self.downloader.errorStatus == Downloader.TIMEOUT_ERROR:
               barmsg = self.tr("Download Timeout - {}").format(self.name())
             else:
-              msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
-              if self.downloader.fetchSuccesses == 0:
-                barmsg = self.tr("Failed to download all {0} files. - {1}").format(self.downloader.fetchErrors, self.name())
+              msg += self.tr(" {} files failed.").format(stats["errors"])
+              if stats["successed"] == 0:   #TODO: do not warn if there are downloaded files
+                barmsg = self.tr("Failed to download all {0} files. - {1}").format(stats["errors"], self.name())
           self.showStatusMessage(msg, 5000)
           if barmsg:
             self.showBarMessage(barmsg, QgsMessageBar.WARNING, 4)
@@ -507,18 +508,13 @@ class TileLayer(QgsPluginLayer):
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     return mapSettings.destinationCrs().postgisSrid() == 3857
 
-  def networkReplyFinished(self, url, error, isFromCache):
-    if self.iface is None or isFromCache:
-      return
-    unfinishedCount = self.downloader.unfinishedCount()
-    if unfinishedCount == 0:
-      self.emit(SIGNAL("allRepliesFinished()"))
-
-    downloadedCount = self.downloader.fetchSuccesses - self.downloader.cacheHits
-    totalCount = self.downloader.finishedCount() + unfinishedCount
-    msg = self.tr("{0} of {1} files downloaded.").format(downloadedCount, totalCount)
-    if self.downloader.fetchErrors:
-      msg += self.tr(" {} files failed.").format(self.downloader.fetchErrors)
+  def networkReplyFinished(self, url):
+    # show progress
+    stats = self.downloader.stats()
+    msg = self.tr("{0} of {1} files downloaded.").format(stats["downloaded"], stats["total"])
+    errors = stats["errors"]
+    if errors:
+      msg += self.tr(" {} files failed.").format(errors)
     self.showStatusMessage(msg)
 
   def readXml(self, node):
@@ -586,7 +582,7 @@ class TileLayer(QgsPluginLayer):
     # create a QEventLoop object that belongs to the current thread (if ver. > 2.1, it is render thread)
     eventLoop = QEventLoop()
     self.logT("Create event loop: " + str(eventLoop))    #DEBUG
-    QObject.connect(self, SIGNAL("allRepliesFinished()"), eventLoop.quit)
+    self.downloader.allRepliesFinished.connect(eventLoop.quit)
 
     # create a timer to watch whether rendering is stopped
     watchTimer = QTimer()
@@ -621,7 +617,7 @@ class TileLayer(QgsPluginLayer):
     files = self.downloader.fetchedFiles
 
     watchTimer.timeout.disconnect(eventLoop.quit)   #
-    QObject.disconnect(self, SIGNAL("allRepliesFinished()"), eventLoop.quit)
+    self.downloader.allRepliesFinished.disconnect(eventLoop.quit)
 
     self.logT("TileLayer.fetchFiles() ends")
     return files
