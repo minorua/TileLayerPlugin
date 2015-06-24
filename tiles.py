@@ -19,12 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import QgsRectangle
-
 import math
+
+from PyQt4.QtCore import QRect
+from PyQt4.QtGui import QImage, QPainter
+from qgis.core import QgsRectangle
 
 R = 6378137
 

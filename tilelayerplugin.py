@@ -19,20 +19,21 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
-# Initialize Qt resources from file resources.py
+import os
+
+from PyQt4.QtCore import Qt, QCoreApplication, QFile, QObject, QSettings, QTranslator, qVersion, qDebug
+from PyQt4.QtGui import QAction, QIcon
+from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsMapLayerRegistry, QgsPluginLayerRegistry
+from qgis.gui import QgsMessageBar
+
 import resources_rc
-import os.path
-from tilelayer import *
+from tilelayer import TileLayer, TileLayerType
 
 debug_mode = 1
 
 class TileLayerPlugin:
 
-    VERSION = "0.30"
+    VERSION = "0.50.1"
 
     def __init__(self, iface):
         self.apiChanged23 = QGis.QGIS_VERSION_INT >= 20300
@@ -59,7 +60,7 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
         self.crs3857 = None
         self.layers = {}
-        QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerRemoved(QString)"), self.layerRemoved)
+        QgsMapLayerRegistry.instance().layerRemoved.connect(self.layerRemoved)
 
     def initGui(self):
         # Create actions
@@ -94,8 +95,7 @@ class TileLayerPlugin:
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
-
-        QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerRemoved(QString)"), self.layerRemoved)
+        QgsMapLayerRegistry.instance().layerRemoved.disconnect(self.layerRemoved)
 
     def layerRemoved(self, layerId):
       if layerId in self.layers:

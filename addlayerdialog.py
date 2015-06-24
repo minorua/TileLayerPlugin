@@ -19,8 +19,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QDir, QFile, QSettings
+from PyQt4.QtGui import QDialog, QHeaderView, QStandardItem, QStandardItemModel
 from qgis.core import QgsMessageLog
 from ui_addlayerdialog import Ui_Dialog
 import os
