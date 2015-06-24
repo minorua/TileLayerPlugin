@@ -139,8 +139,8 @@ class TileLayer(QgsPluginLayer):
     isWebMercator = self.isProjectCrsWebMercator()
     if not isWebMercator:
       # get extent in project CRS
-      extent = QgsRectangle(map2pixel.toMapCoordinatesF(0, 0), map2pixel.toMapCoordinatesF(viewport.width(), viewport.height()))
-      mapExtent = RotatedRect(extent.center(), mupp * viewport.width(), mupp * viewport.height(), rotation)
+      center = map2pixel.toMapCoordinatesF(0.5 * viewport.width(), 0.5 * viewport.height())
+      mapExtent = RotatedRect(center, mupp * viewport.width(), mupp * viewport.height(), rotation)
       geometry = mapExtent.geometry()
 
       # get bounding box of the extent in EPSG:3857
@@ -438,14 +438,14 @@ class TileLayer(QgsPluginLayer):
         self.drawNumber(renderContext, zoom, x, y, sdx, sdy)
 
   def drawInfo(self, renderContext, zoom, xmin, ymin, xmax, ymax):
-    # debug information
+    # debug information   #TODO: move to another file
     mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
     lines = []
     lines.append("TileLayer")
     lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin) )
     extent = renderContext.extent()
     lines.append(" map extent (renderContext): %s" % extent.toString() )
-    lines.append(" map center: %lf, %lf" % (extent.center().x(), extent.center().y() ) )
+    lines.append(" map center (renderContext): %lf, %lf" % (extent.center().x(), extent.center().y() ) )
     lines.append(" map size: %f, %f" % (extent.width(), extent.height() ) )
     lines.append(" map extent (map canvas): %s" % self.iface.mapCanvas().extent().toString() )
     m2p = renderContext.mapToPixel()
@@ -453,6 +453,9 @@ class TileLayer(QgsPluginLayer):
     viewport = painter.viewport()
     mapExtent = QgsRectangle(m2p.toMapCoordinatesF(0, 0), m2p.toMapCoordinatesF(viewport.width(), viewport.height()))
     lines.append(" map extent (calculated): %s" % mapExtent.toString() )
+    lines.append(" map center (calc rect): %lf, %lf" % (mapExtent.center().x(), mapExtent.center().y() ) )
+    center = m2p.toMapCoordinatesF(0.5 * viewport.width(), 0.5 * viewport.height())
+    lines.append(" map center (calc pt): %lf, %lf" % (center.x(), center.y() ) )
     lines.append(" viewport size (pixel): %d, %d" % (viewport.width(), viewport.height() ) )
     lines.append(" window size (pixel): %d, %d" % (painter.window().width(), painter.window().height() ) )
     lines.append(" outputSize (pixel): %d, %d" % (mapSettings.outputSize().width(), mapSettings.outputSize().height() ) )
