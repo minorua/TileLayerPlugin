@@ -145,8 +145,12 @@ class TileLayer(QgsPluginLayer):
 
       # get bounding box of the extent in EPSG:3857
       transform = renderContext.coordinateTransform()
-      geometry.transform(QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs()))    # project CRS to layer CRS (EPSG:3857)
-      extent = geometry.boundingBox()
+      if transform:
+        geometry.transform(QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs()))    # project CRS to layer CRS (EPSG:3857)
+        extent = geometry.boundingBox()
+      else:
+        qDebug("Drawing is skipped because CRS transformation is not ready.")
+        return True
 
     elif rotation:
       # get bounding box of the extent
