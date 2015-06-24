@@ -84,8 +84,6 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
-    self.useLastZoomForPrint = False
-    self.canvasLastZoom = 0
     self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
     self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
     self.setSmoothRender(LayerDefaultSettings.SMOOTH_RENDER)
@@ -157,17 +155,11 @@ class TileLayer(QgsPluginLayer):
       mapExtent = RotatedRect(extent.center(), mupp * viewport.width(), mupp * viewport.height(), rotation)
       extent = mapExtent.boundingBox()
 
-    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
-    isDpiEqualToCanvas = painter.device().logicalDpiX() == mapSettings.outputDpi()
-    if isDpiEqualToCanvas or not self.useLastZoomForPrint:    #TODO: remove isDpiEqualToCanvas, useLastZoomForPrint and canvasLastZoom
-      # calculate zoom level
-      tile_mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
-      zoom = int(math.ceil(math.log(tile_mpp1 / mupp, 2) + 1))
-      zoom = max(0, min(zoom, self.layerDef.zmax))
-      #zoom = max(self.layerDef.zmin, zoom)
-    else:
-      # for print composer output image, use last zoom level of map item on print composer (or map canvas)
-      zoom = self.canvasLastZoom
+    # calculate zoom level
+    tile_mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
+    zoom = int(math.ceil(math.log(tile_mpp1 / mupp, 2) + 1))
+    zoom = max(0, min(zoom, self.layerDef.zmax))
+    #zoom = max(self.layerDef.zmin, zoom)
 
     # zoom limit
     if zoom < self.layerDef.zmin:
@@ -254,11 +246,7 @@ class TileLayer(QgsPluginLayer):
       self.tiles = tiles
       if len(urls) > 0:
         # fetch tile data
-        if self.plugin.apiChanged23:
-          files = self.fetchFiles(urls)
-        else:
-          files = self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)   #TODO: move into self.fetchFiles()
-
+        files = self.fetchFiles(urls)
         for url in files.keys():
           self.tiles.setImageData(url, files[url])
 
@@ -324,9 +312,6 @@ class TileLayer(QgsPluginLayer):
     # restore painter state
     painter.restore()
 
-    if isDpiEqualToCanvas:
-      # save zoom level for printing (output with different dpi from map canvas)
-      self.canvasLastZoom = zoom
     return True
 
   def drawTiles(self, renderContext, tiles, sdx=1.0, sdy=1.0):
@@ -547,6 +532,9 @@ class TileLayer(QgsPluginLayer):
 
   # functions for multi-thread rendering
   def fetchFiles(self, urls):
+    if not self.plugin.apiChanged23:
+      return self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
+
     self.logT("TileLayer.fetchFiles() starts")
     # create a QEventLoop object that belongs to the current worker thread
     eventLoop = QEventLoop()
