@@ -19,11 +19,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QPainter
+
 from ui_propertiesdialog import Ui_Dialog
 
 class PropertiesDialog(QDialog):
+
+  applyClicked = pyqtSignal()
+
   def __init__(self, layer):
     QDialog.__init__(self)
     # set up the user interface
@@ -35,7 +39,7 @@ class PropertiesDialog(QDialog):
     self.initBlendingCombo()
     self.ui.horizontalSlider_Transparency.valueChanged.connect(self.sliderChanged)
     self.ui.spinBox_Transparency.valueChanged.connect(self.spinBoxChanged)
-    QObject.connect(self.ui.buttonBox.button(QDialogButtonBox.Apply), SIGNAL("clicked()"), self, SIGNAL("applyClicked()"))
+    self.ui.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.applyClicked)
 
     self.ui.textEdit_Properties.setText(layer.metadata())
     self.ui.spinBox_Transparency.setValue(layer.transparency)
