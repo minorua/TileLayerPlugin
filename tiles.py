@@ -38,7 +38,9 @@ def degreesToMercatorMeters(lon, lat):
   y = R * math.log(math.tan((90 + lat) * math.pi / 360))
   return x, y
 
+
 class BoundingBox:
+
   def __init__(self, xmin, ymin, xmax, ymax):
     self.xmin = xmin
     self.ymin = ymin
@@ -64,56 +66,6 @@ class BoundingBox:
     a = map(float, s.split(","))
     return BoundingBox(a[0], a[1], a[2], a[3])
 
-class Tile:
-  def __init__(self, zoom, x, y, data=None):
-    self.zoom = zoom
-    self.x = x
-    self.y = y
-    self.data = data
-
-class Tiles:
-
-  def __init__(self, zoom, xmin, ymin, xmax, ymax, serviceInfo):
-    self.zoom = zoom
-    self.xmin = xmin
-    self.ymin = ymin
-    self.xmax = xmax
-    self.ymax = ymax
-    self.TILE_SIZE = serviceInfo.TILE_SIZE
-    self.TSIZE1 = serviceInfo.TSIZE1
-    self.yOriginTop = serviceInfo.yOriginTop
-    self.serviceInfo = serviceInfo
-    self.tiles = {}
-
-  def addTile(self, url, tile):
-    self.tiles[url] = tile
-
-  def setImageData(self, url, data):
-    if url in self.tiles:
-      self.tiles[url].data = data
-
-  def image(self):
-    width = (self.xmax - self.xmin + 1) * self.TILE_SIZE
-    height = (self.ymax - self.ymin + 1) * self.TILE_SIZE
-    image = QImage(width, height, QImage.Format_ARGB32_Premultiplied)
-    p = QPainter(image)
-    for tile in self.tiles.values():
-      if not tile.data:
-        continue
-
-      x = tile.x - self.xmin
-      y = tile.y - self.ymin
-      rect = QRect(x * self.TILE_SIZE, y * self.TILE_SIZE, self.TILE_SIZE, self.TILE_SIZE)
-
-      timg = QImage()
-      timg.loadFromData(tile.data)
-      p.drawImage(rect, timg)
-    return image
-
-  def extent(self):
-    size = self.TSIZE1 / 2 ** (self.zoom - 1)
-    return QgsRectangle(self.xmin * size - self.TSIZE1, self.TSIZE1 - (self.ymax + 1) * size,
-                        (self.xmax + 1) * size - self.TSIZE1, self.TSIZE1 - self.ymin * size)
 
 class TileLayerDefinition:
 
@@ -162,3 +114,56 @@ class TileLayerDefinition:
   @classmethod
   def createEmptyInfo(cls):
     return TileLayerDefinition("", "", "")
+
+
+class Tile:
+  def __init__(self, zoom, x, y, data=None):
+    self.zoom = zoom
+    self.x = x
+    self.y = y
+    self.data = data
+
+
+class Tiles:
+
+  def __init__(self, zoom, xmin, ymin, xmax, ymax, serviceInfo):
+    self.zoom = zoom
+    self.xmin = xmin
+    self.ymin = ymin
+    self.xmax = xmax
+    self.ymax = ymax
+    self.TILE_SIZE = serviceInfo.TILE_SIZE
+    self.TSIZE1 = serviceInfo.TSIZE1
+    self.yOriginTop = serviceInfo.yOriginTop
+    self.serviceInfo = serviceInfo
+    self.tiles = {}
+
+  def addTile(self, url, tile):
+    self.tiles[url] = tile
+
+  def setImageData(self, url, data):
+    if url in self.tiles:
+      self.tiles[url].data = data
+
+  def image(self):
+    width = (self.xmax - self.xmin + 1) * self.TILE_SIZE
+    height = (self.ymax - self.ymin + 1) * self.TILE_SIZE
+    image = QImage(width, height, QImage.Format_ARGB32_Premultiplied)
+    p = QPainter(image)
+    for tile in self.tiles.values():
+      if not tile.data:
+        continue
+
+      x = tile.x - self.xmin
+      y = tile.y - self.ymin
+      rect = QRect(x * self.TILE_SIZE, y * self.TILE_SIZE, self.TILE_SIZE, self.TILE_SIZE)
+
+      timg = QImage()
+      timg.loadFromData(tile.data)
+      p.drawImage(rect, timg)
+    return image
+
+  def extent(self):
+    size = self.TSIZE1 / 2 ** (self.zoom - 1)
+    return QgsRectangle(self.xmin * size - self.TSIZE1, self.TSIZE1 - (self.ymax + 1) * size,
+                        (self.xmax + 1) * size - self.TSIZE1, self.TSIZE1 - self.ymin * size)
