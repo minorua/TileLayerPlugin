@@ -26,7 +26,6 @@ from PyQt4.QtGui import QAction, QIcon
 from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsMapLayerRegistry, QgsPluginLayerRegistry
 from qgis.gui import QgsMessageBar
 
-import resources_rc
 from tilelayer import TileLayer, TileLayerType
 
 debug_mode = 1
@@ -63,15 +62,12 @@ class TileLayerPlugin:
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.layerRemoved)
 
     def initGui(self):
-        # Create actions
-        self.action = QAction(
-            QIcon(":/plugins/tilelayerplugin/icon.png"),
-            self.tr("Add Tile Layer..."), self.iface.mainWindow())
-
-        # set object name
+        # Create action
+        icon = QIcon(os.path.join(self.plugin_dir, "icon.png"))
+        self.action = QAction(icon, self.tr("Add Tile Layer..."), self.iface.mainWindow())
         self.action.setObjectName("TileLayerPlugin_AddLayer")
 
-        # connect the actions to the methods
+        # connect the action to the method
         self.action.triggered.connect(self.run)
 
         # Add toolbar button and menu item
