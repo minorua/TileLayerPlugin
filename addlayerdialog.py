@@ -25,7 +25,7 @@ from qgis.core import QgsMessageLog
 from ui_addlayerdialog import Ui_Dialog
 import os
 import codecs
-from tiles import BoundingBox, TileServiceInfo
+from tiles import BoundingBox, TileLayerDefinition
 
 debug_mode = 1
 
@@ -107,18 +107,18 @@ class AddLayerDialog(QDialog):
         if not url:
           raise
         if nvals < 4:
-          serviceInfo = TileServiceInfo(title, credit, url)
+          serviceInfo = TileLayerDefinition(title, credit, url)
         else:
           yOriginTop = int(vals[3])
           if nvals < 6:
-            serviceInfo = TileServiceInfo(title, credit, url, yOriginTop)
+            serviceInfo = TileLayerDefinition(title, credit, url, yOriginTop)
           else:
             zmin, zmax = map(int, vals[4:6])
             if nvals < 10:
-              serviceInfo = TileServiceInfo(title, credit, url, yOriginTop, zmin, zmax)
+              serviceInfo = TileLayerDefinition(title, credit, url, yOriginTop, zmin, zmax)
             else:
               bbox = BoundingBox.fromString(",".join(vals[6:10]))
-              serviceInfo = TileServiceInfo(title, credit, url, yOriginTop, zmin, zmax, bbox)
+              serviceInfo = TileLayerDefinition(title, credit, url, yOriginTop, zmin, zmax, bbox)
       except:
         QgsMessageLog.logMessage(self.tr("Invalid line format: {} line {}").format(basename, i + 1), self.tr("TileLayerPlugin"))
         continue
@@ -130,7 +130,7 @@ class AddLayerDialog(QDialog):
       self.serviceInfoList.append(serviceInfo)
     return True
 
-  def selectedServiceInfoList(self):
+  def selectedLayerDefinitions(self):
     list = []
     for idx in self.ui.treeView.selectionModel().selection().indexes():
       if idx.column() == self.indexColumn and idx.data() is not None:
@@ -142,5 +142,5 @@ class AddLayerDialog(QDialog):
       self.setupTreeView()
 
   def treeItemDoubleClicked(self, index):
-    if len(self.selectedServiceInfoList()) > 0:
+    if len(self.selectedLayerDefinitions()) > 0:
       self.accept()

@@ -115,7 +115,7 @@ class Tiles:
     return QgsRectangle(self.xmin * size - self.TSIZE1, self.TSIZE1 - (self.ymax + 1) * size,
                         (self.xmax + 1) * size - self.TSIZE1, self.TSIZE1 - self.ymin * size)
 
-class TileServiceInfo:
+class TileLayerDefinition:
 
   TILE_SIZE = 256
   TSIZE1 = 20037508.342789244
@@ -161,4 +161,4 @@ class TileServiceInfo:
 
   @classmethod
   def createEmptyInfo(cls):
-    return TileServiceInfo("", "", "")
+    return TileLayerDefinition("", "", "")

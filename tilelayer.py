@@ -28,7 +28,7 @@ import os
 import threading
 
 from downloader import Downloader
-from tiles import BoundingBox, Tile, TileDefaultSettings, TileServiceInfo, Tiles
+from tiles import BoundingBox, Tile, TileDefaultSettings, TileLayerDefinition, Tiles
 
 try:
   from osgeo import gdal
@@ -647,7 +647,7 @@ class TileLayerType(QgsPluginLayerType):
     self.plugin = plugin
 
   def createLayer(self):
-    return TileLayer(self.plugin, TileServiceInfo.createEmptyInfo())
+    return TileLayer(self.plugin, TileLayerDefinition.createEmptyInfo())
 
   def showLayerProperties(self, layer):
     from propertiesdialog import PropertiesDialog
