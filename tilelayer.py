@@ -23,8 +23,8 @@ import math
 import os
 import threading
 
-from PyQt4.QtCore import Qt, QEventLoop, QFile, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QTimer, pyqtSignal, qDebug
-from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter
+from PyQt4.QtCore import Qt, QEventLoop, QFile, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug
+from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter, QMessageBox
 from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsGeometry, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
 from qgis.gui import QgsMessageBar
 
@@ -58,6 +58,7 @@ class TileLayer(QgsPluginLayer):
     self.iface = plugin.iface
     self.layerDef = layerDef
     self.attribVisibility = 1 if attribVisibility else 0
+    self.tiles = None
 
     # set attribution property
     self.setAttribution(layerDef.attribution)
@@ -73,26 +74,37 @@ class TileLayer(QgsPluginLayer):
       self.setCustomProperty("bbox", layerDef.bbox.toString())
     self.setCustomProperty("creditVisibility", self.attribVisibility)
 
-    # create a QgsCoordinateReferenceSystem instance if plugin has no instance yet
+    # set crs
     if plugin.crs3857 is None:
+      # create a QgsCoordinateReferenceSystem instance if plugin has no instance yet
       plugin.crs3857 = QgsCoordinateReferenceSystem(3857)
+
     self.setCrs(plugin.crs3857)
+
+    # set extent
     if layerDef.bbox:
       self.setExtent(BoundingBox.degreesToMercatorMeters(layerDef.bbox).toQgsRectangle())
     else:
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
-    self.setValid(True)
-    self.tiles = None
+
+    # set styles
     self.setTransparency(0)
     self.setBlendModeByName(self.DEFAULT_BLEND_MODE)
     self.setSmoothRender(self.DEFAULT_SMOOTH_RENDER)
 
-    maxConnections = 2
+    # downloader
+    maxConnections = HonestAccess.maxConnections(layerDef.serviceUrl)
     cacheExpiry = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
     userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION)   # will be overwritten in QgsNetworkAccessManager::createRequest() since 2.2
     self.downloader = Downloader(self, maxConnections, cacheExpiry, userAgent)
     if self.iface:
       self.downloader.replyFinished.connect(self.networkReplyFinished)    # download progress
+
+    # TOS violation warning
+    if HonestAccess.restrictedByTOS(layerDef.serviceUrl):
+      QMessageBox.warning(None,
+                          u"{0} - {1}".format(self.tr("TileLayerPlugin"), layerDef.title),
+                          self.tr("Access to the service is restricted by the TOS. Please follow the TOS."))
 
     # multi-thread rendering
     self.eventLoop = None
@@ -100,6 +112,8 @@ class TileLayer(QgsPluginLayer):
     if self.iface:
       self.statusSignal.connect(self.showStatusMessageSlot)
       self.messageBarSignal.connect(self.showMessageBarSlot)
+
+    self.setValid(True)
 
   def setBlendModeByName(self, modeName):
     self.blendModeName = modeName
@@ -507,11 +521,15 @@ class TileLayer(QgsPluginLayer):
     if bbox:
       self.layerDef.bbox = BoundingBox.fromString(bbox)
       self.setExtent(BoundingBox.degreesToMercatorMeters(self.layerDef.bbox).toQgsRectangle())
+
     # layer style
     self.setTransparency(int(self.customProperty("transparency", 0)))
     self.setBlendModeByName(self.customProperty("blendMode", self.DEFAULT_BLEND_MODE))
     self.setSmoothRender(int(self.customProperty("smoothRender", self.DEFAULT_SMOOTH_RENDER)))
     self.attribVisibility = int(self.customProperty("creditVisibility", 1))
+
+    # max connections of downloader
+    self.downloader.maxConnections = HonestAccess.maxConnections(self.layerDef.serviceUrl)
     return True
 
   def writeXml(self, node, doc):
@@ -644,3 +662,21 @@ class TileLayerType(QgsPluginLayerType):
     layer.setSmoothRender(dialog.ui.checkBox_SmoothRender.isChecked())
     layer.setAttribVisibility(dialog.ui.checkBox_AttribVisibility.isChecked())
     layer.repaintRequested.emit()
+
+
+class HonestAccess:
+
+  @staticmethod
+  def maxConnections(url):
+    host = QUrl(url).host()
+    if "openstreetmap.org" in host:  # http://wiki.openstreetmap.org/wiki/Tile_servers
+      return 2                      # http://wiki.openstreetmap.org/wiki/Tile_usage_policy
+    return 6
+
+  @staticmethod
+  def restrictedByTOS(url):
+    # if access to the url is restricted by TOS, return 0
+    host = QUrl(url).host()
+    if "google.com" in host:        # https://developers.google.com/maps/terms 10.1.1.a No Access to Maps API(s) Except...
+      return True
+    return False
