@@ -357,6 +357,7 @@ class TileLayer(QgsPluginLayer):
     extent = tiles.extent()
     geotransform = [extent.xMinimum(), extent.width() / image.width(), 0, extent.yMaximum(), 0, -extent.height() / image.height()]
 
+    # source raster dataset
     driver = gdal.GetDriverByName("MEM")
     tile_ds = driver.Create("", image.width(), image.height(), 1, gdal.GDT_UInt32)
     tile_ds.SetProjection(str(sourceCrs.toWkt()))
@@ -366,11 +367,15 @@ class TileLayer(QgsPluginLayer):
     ba = image.bits().asstring(image.numBytes())
     tile_ds.GetRasterBand(1).WriteRaster(0, 0, image.width(), image.height(), ba)
 
-    # canvas extent
+    # target raster size - if smoothing is enabled, create raster of twice each of width and height of viewport size
+    # in order to get high quality image
+    oversampl = 2 if self.smoothRender else 1
+
     painter = renderContext.painter()
     viewport = painter.viewport()
-    width, height = viewport.width(), viewport.height()
+    width, height = viewport.width() * oversampl, viewport.height() * oversampl
 
+    # target raster dataset
     canvas_ds = driver.Create("", width, height, 1, gdal.GDT_UInt32)
     canvas_ds.SetProjection(str(destCrs.toWkt()))
     canvas_ds.SetGeoTransform(mapExtent.geotransform(width, height, is_grid_point=False))
@@ -383,7 +388,7 @@ class TileLayer(QgsPluginLayer):
     reprojected_image = QImage(ba, width, height, QImage.Format_ARGB32_Premultiplied)
 
     # draw the image on the map canvas
-    rect = QRectF(QPointF(0, 0), QPointF(width * sdx, height * sdy))
+    rect = QRectF(QPointF(0, 0), QPointF(viewport.width() * sdx, viewport.height() * sdy))
     painter.drawImage(rect, reprojected_image)
 
   def drawTilesDirectly(self, renderContext, tiles, sdx=1.0, sdy=1.0):
