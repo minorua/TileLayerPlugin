@@ -20,38 +20,59 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import Qt, QPoint, QPointF, QRect, QRectF, qDebug
-from qgis.core import QgsRectangle
+from qgis.core import QGis, QgsCoordinateTransform, QgsGeometry, QgsPoint, QgsRectangle
 
 def drawDebugInformation(layer, renderContext, zoom, xmin, ymin, xmax, ymax):
   self = layer
   mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
+
   lines = []
   lines.append("TileLayer")
   lines.append(" zoom: %d, tile matrix extent: (%d, %d) - (%d, %d), tile count: %d * %d" % (zoom, xmin, ymin, xmax, ymax, xmax - xmin, ymax - ymin))
+
   extent = renderContext.extent()
   lines.append(" map extent (renderContext): %s" % extent.toString())
   lines.append(" map center (renderContext): %lf, %lf" % (extent.center().x(), extent.center().y()))
   lines.append(" map size: %f, %f" % (extent.width(), extent.height()))
   lines.append(" map extent (map canvas): %s" % self.iface.mapCanvas().extent().toString())
-  m2p = renderContext.mapToPixel()
+
+  map2pixel = renderContext.mapToPixel()
   painter = renderContext.painter()
   viewport = painter.viewport()
-  mapExtent = QgsRectangle(m2p.toMapCoordinatesF(0, 0), m2p.toMapCoordinatesF(viewport.width(), viewport.height()))
+  mapExtent = QgsRectangle(map2pixel.toMapCoordinatesF(0, 0), map2pixel.toMapCoordinatesF(viewport.width(), viewport.height()))
   lines.append(" map extent (calculated): %s" % mapExtent.toString())
   lines.append(" map center (calc rect): %lf, %lf" % (mapExtent.center().x(), mapExtent.center().y()))
-  center = m2p.toMapCoordinatesF(0.5 * viewport.width(), 0.5 * viewport.height())
+
+  center = map2pixel.toMapCoordinatesF(0.5 * viewport.width(), 0.5 * viewport.height())
   lines.append(" map center (calc pt): %lf, %lf" % (center.x(), center.y()))
+
   lines.append(" viewport size (pixel): %d, %d" % (viewport.width(), viewport.height()))
   lines.append(" window size (pixel): %d, %d" % (painter.window().width(), painter.window().height()))
   lines.append(" outputSize (pixel): %d, %d" % (mapSettings.outputSize().width(), mapSettings.outputSize().height()))
+
   device = painter.device()
   lines.append(" deviceSize (pixel): %f, %f" % (device.width(), device.height()))
   lines.append(" logicalDpi: %f, %f" % (device.logicalDpiX(), device.logicalDpiY()))
   lines.append(" outputDpi: %f" % mapSettings.outputDpi())
-  lines.append(" mapToPixel: %s" % m2p.showParameters())
-  lines.append(" meters per pixel: %f" % (extent.width() / viewport.width()))
+  lines.append(" mapToPixel: %s" % map2pixel.showParameters())
+
+  mupp = map2pixel.mapUnitsPerPixel()
+  lines.append(" map units per pixel: %f" % mupp)
+  lines.append(" meters per pixel (renderContext): %f" % (extent.width() / viewport.width()))
+  transform = renderContext.coordinateTransform()
+  if transform:
+    mpp = mupp * {QGis.Feet: 0.3048, QGis.Degrees: self.layerDef.TSIZE1 / 180}.get(transform.destCRS().mapUnits(), 1)
+    lines.append(" meters per pixel (calc 1): %f" % mpp)
+
+    cx, cy = 0.5 * viewport.width(), 0.5 * viewport.height()
+    geometry = QgsGeometry.fromPolyline([map2pixel.toMapCoordinatesF(cx - 0.5, cy), map2pixel.toMapCoordinatesF(cx + 0.5, cy)])
+    geometry.transform(QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs()))    # project CRS to layer CRS (EPSG:3857)
+    mpp = geometry.length()
+    lines.append(" meters per pixel (calc center pixel): %f" % mpp)
+
   lines.append(" scaleFactor: %f" % renderContext.scaleFactor())
   lines.append(" rendererScale: %f" % renderContext.rendererScale())
+
   scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
   lines.append(" scale: %f, %f" % (scaleX, scaleY))
 

@@ -25,7 +25,7 @@ import threading
 
 from PyQt4.QtCore import Qt, QEventLoop, QFile, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QTimer, pyqtSignal, qDebug
 from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter
-from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
+from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsGeometry, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 try:
@@ -133,17 +133,24 @@ class TileLayer(QgsPluginLayer):
     painter = renderContext.painter()
     viewport = painter.viewport()
 
+    mpp = mupp    # meters per pixel
     isWebMercator = self.isProjectCrsWebMercator()
     if not isWebMercator:
       # get extent in project CRS
-      center = map2pixel.toMapCoordinatesF(0.5 * viewport.width(), 0.5 * viewport.height())
+      cx, cy = 0.5 * viewport.width(), 0.5 * viewport.height()
+      center = map2pixel.toMapCoordinatesF(cx, cy)
       mapExtent = RotatedRect(center, mupp * viewport.width(), mupp * viewport.height(), rotation)
-      geometry = mapExtent.geometry()
 
-      # get bounding box of the extent in EPSG:3857
       transform = renderContext.coordinateTransform()
       if transform:
-        geometry.transform(QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs()))    # project CRS to layer CRS (EPSG:3857)
+        transform = QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs())    # project CRS to layer CRS (EPSG:3857)
+        geometry = QgsGeometry.fromPolyline([map2pixel.toMapCoordinatesF(cx - 0.5, cy), map2pixel.toMapCoordinatesF(cx + 0.5, cy)])
+        geometry.transform(transform)
+        mpp = geometry.length()
+
+        # get bounding box of the extent in EPSG:3857
+        geometry = mapExtent.geometry()
+        geometry.transform(transform)
         extent = geometry.boundingBox()
       else:
         qDebug("Drawing is skipped because CRS transformation is not ready.")
@@ -156,7 +163,7 @@ class TileLayer(QgsPluginLayer):
 
     # calculate zoom level
     tile_mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
-    zoom = int(math.ceil(math.log(tile_mpp1 / mupp, 2) + 1))
+    zoom = int(math.ceil(math.log(tile_mpp1 / mpp, 2) + 1))
     zoom = max(0, min(zoom, self.layerDef.zmax))
     #zoom = max(self.layerDef.zmin, zoom)
 
