@@ -63,6 +63,9 @@ class TileLayer(QgsPluginLayer):
     self.layerDef = layerDef
     self.attribVisibility = 1 if attribVisibility else 0
 
+    # set attribution property
+    self.setAttribution(layerDef.attribution)
+
     # set custom properties
     self.setCustomProperty("title", layerDef.title)
     self.setCustomProperty("credit", layerDef.attribution)
