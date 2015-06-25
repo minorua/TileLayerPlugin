@@ -46,7 +46,7 @@ class AddLayerDialog(QDialog):
   def setupTreeView(self):
 
     # tree view header labels
-    headers = [self.tr("Title"), self.tr("Credit"), self.tr("Url"), self.tr("Zoom"), self.tr("Extent"), self.tr("yOrigin")] + ["index"]
+    headers = [self.tr("Title"), self.tr("Attribution"), self.tr("Url"), self.tr("Zoom"), self.tr("Extent"), self.tr("yOrigin")] + ["index"]
     self.indexColumn = len(headers) - 1
 
     self.model = QStandardItemModel(0, len(headers))
@@ -79,7 +79,7 @@ class AddLayerDialog(QDialog):
         self.importFromTsv(fileInfo.filePath())
 
   # Line Format is:
-  # title credit url [yOriginTop [zmin zmax [xmin ymin xmax ymax ]]]
+  # title attribution url [yOriginTop [zmin zmax [xmin ymin xmax ymax ]]]
   def importFromTsv(self, filename):
     # append file item
     rootItem = self.model.invisibleRootItem()
@@ -103,22 +103,22 @@ class AddLayerDialog(QDialog):
       try:
         if nvals < 3:
           raise
-        title, credit, url = vals[0:3]
+        title, attribution, url = vals[0:3]
         if not url:
           raise
         if nvals < 4:
-          serviceInfo = TileLayerDefinition(title, credit, url)
+          serviceInfo = TileLayerDefinition(title, attribution, url)
         else:
           yOriginTop = int(vals[3])
           if nvals < 6:
-            serviceInfo = TileLayerDefinition(title, credit, url, yOriginTop)
+            serviceInfo = TileLayerDefinition(title, attribution, url, yOriginTop)
           else:
             zmin, zmax = map(int, vals[4:6])
             if nvals < 10:
-              serviceInfo = TileLayerDefinition(title, credit, url, yOriginTop, zmin, zmax)
+              serviceInfo = TileLayerDefinition(title, attribution, url, yOriginTop, zmin, zmax)
             else:
               bbox = BoundingBox.fromString(",".join(vals[6:10]))
-              serviceInfo = TileLayerDefinition(title, credit, url, yOriginTop, zmin, zmax, bbox)
+              serviceInfo = TileLayerDefinition(title, attribution, url, yOriginTop, zmin, zmax, bbox)
       except:
         QgsMessageLog.logMessage(self.tr("Invalid line format: {} line {}").format(basename, i + 1), self.tr("TileLayerPlugin"))
         continue

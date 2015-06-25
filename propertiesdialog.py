@@ -49,10 +49,10 @@ class PropertiesDialog(QDialog):
 
     if layer.layerDef.serviceUrl[0] == ":":
       self.ui.checkBox_SmoothRender.setEnabled(False)
-      self.ui.checkBox_CreditVisibility.setEnabled(False)
+      self.ui.checkBox_AttribVisibility.setEnabled(False)
     else:
       self.ui.checkBox_SmoothRender.setChecked(layer.smoothRender)
-      self.ui.checkBox_CreditVisibility.setChecked(layer.creditVisibility)
+      self.ui.checkBox_AttribVisibility.setChecked(layer.attribVisibility)
 
   def initBlendingCombo(self):
     attrs = dir(QPainter)

@@ -99,17 +99,17 @@ class TileLayerPlugin:
         if debug_mode:
           qDebug("Layer %s removed" % layerId.encode("UTF-8"))
 
-    def addTileLayer(self, layerdef, creditVisibility=True):
+    def addTileLayer(self, layerdef, attribVisibility=True):
       """@api
          @param layerdef - an object of TileLayerDefinition class (in tiles.py)
-         @param creditVisibility - visibility of credit label
+         @param attribVisibility - visibility of attribution label
          @returns newly created tile layer. if the layer is invalid, returns None
          @note added in 0.60
       """
       if self.crs3857 is None:
         self.crs3857 = QgsCoordinateReferenceSystem(3857)
 
-      layer = TileLayer(self, layerdef, creditVisibility)
+      layer = TileLayer(self, layerdef, attribVisibility)
       if not layer.isValid():
         return None
 
@@ -122,9 +122,9 @@ class TileLayerPlugin:
       dialog = AddLayerDialog(self)
       dialog.show()
       if dialog.exec_():
-        creditVisibility = dialog.ui.checkBox_CreditVisibility.isChecked()
+        attribVisibility = dialog.ui.checkBox_AttribVisibility.isChecked()
         for layerdef in dialog.selectedLayerDefinitions():
-          self.addTileLayer(layerdef, creditVisibility)
+          self.addTileLayer(layerdef, attribVisibility)
 
     def settings(self):
       oldMoveToLayer = QSettings().value("/TileLayerPlugin/moveToLayer", 0, type=int)

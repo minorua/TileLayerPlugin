@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\minorua\.qgis2\python\developing_plugins\TileLayerPlugin\propertiesdialog.ui'
 #
-# Created: Fri Aug 29 10:39:32 2014
+# Created: Thu Jun 25 09:47:50 2015
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -80,9 +80,9 @@ class Ui_Dialog(object):
         self.checkBox_SmoothRender = QtGui.QCheckBox(self.groupBox_Style)
         self.checkBox_SmoothRender.setObjectName(_fromUtf8("checkBox_SmoothRender"))
         self.verticalLayout.addWidget(self.checkBox_SmoothRender)
-        self.checkBox_CreditVisibility = QtGui.QCheckBox(self.groupBox_Style)
-        self.checkBox_CreditVisibility.setObjectName(_fromUtf8("checkBox_CreditVisibility"))
-        self.verticalLayout.addWidget(self.checkBox_CreditVisibility)
+        self.checkBox_AttribVisibility = QtGui.QCheckBox(self.groupBox_Style)
+        self.checkBox_AttribVisibility.setObjectName(_fromUtf8("checkBox_AttribVisibility"))
+        self.verticalLayout.addWidget(self.checkBox_AttribVisibility)
         self.gridLayout_2.addWidget(self.groupBox_Style, 2, 0, 1, 1)
         self.groupBox_Properties = QtGui.QGroupBox(Dialog)
         self.groupBox_Properties.setObjectName(_fromUtf8("groupBox_Properties"))
@@ -108,6 +108,6 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", "Blending mode", None))
         self.label_3.setText(_translate("Dialog", "(Default: SourceOver)", None))
         self.checkBox_SmoothRender.setText(_translate("Dialog", "Smoothing", None))
-        self.checkBox_CreditVisibility.setText(_translate("Dialog", "Place the credit on the bottom right corner", None))
+        self.checkBox_AttribVisibility.setText(_translate("Dialog", "Place the attribution on the bottom right corner", None))
         self.groupBox_Properties.setTitle(_translate("Dialog", "Properties", None))
 

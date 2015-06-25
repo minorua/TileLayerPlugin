@@ -72,9 +72,9 @@ class TileLayerDefinition:
   TILE_SIZE = 256
   TSIZE1 = 20037508.342789244
 
-  def __init__(self, title, credit, serviceUrl, yOriginTop=1, zmin=TileDefaultSettings.ZMIN, zmax=TileDefaultSettings.ZMAX, bbox=None):
+  def __init__(self, title, attribution, serviceUrl, yOriginTop=1, zmin=TileDefaultSettings.ZMIN, zmax=TileDefaultSettings.ZMAX, bbox=None):
     self.title = title
-    self.credit = credit
+    self.attribution = attribution
     self.serviceUrl = serviceUrl
     self.yOriginTop = yOriginTop
     self.zmin = max(zmin, 0)
@@ -109,7 +109,7 @@ class TileLayerDefinition:
     extent = ""
     if self.bbox:
       extent = self.bbox.toString(2)
-    return [self.title, self.credit, self.serviceUrl, "%d-%d" % (self.zmin, self.zmax), extent, self.yOriginTop]
+    return [self.title, self.attribution, self.serviceUrl, "%d-%d" % (self.zmin, self.zmax), extent, self.yOriginTop]
 
   @classmethod
   def createEmptyInfo(cls):

@@ -56,23 +56,23 @@ class TileLayer(QgsPluginLayer):
   statusSignal = pyqtSignal(str, int)
   messageBarSignal = pyqtSignal(str, str, int, int)
 
-  def __init__(self, plugin, layerDef, creditVisibility=1):
+  def __init__(self, plugin, layerDef, attribVisibility=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.plugin = plugin
     self.iface = plugin.iface
     self.layerDef = layerDef
-    self.creditVisibility = 1 if creditVisibility else 0
+    self.attribVisibility = 1 if attribVisibility else 0
 
     # set custom properties
     self.setCustomProperty("title", layerDef.title)
-    self.setCustomProperty("credit", layerDef.credit)
+    self.setCustomProperty("credit", layerDef.attribution)
     self.setCustomProperty("serviceUrl", layerDef.serviceUrl)
     self.setCustomProperty("yOriginTop", layerDef.yOriginTop)
     self.setCustomProperty("zmin", layerDef.zmin)
     self.setCustomProperty("zmax", layerDef.zmax)
     if layerDef.bbox:
       self.setCustomProperty("bbox", layerDef.bbox.toString())
-    self.setCustomProperty("creditVisibility", self.creditVisibility)
+    self.setCustomProperty("creditVisibility", self.attribVisibility)
 
     # create a QgsCoordinateReferenceSystem instance if plugin has no instance yet
     if plugin.crs3857 is None:
@@ -116,8 +116,8 @@ class TileLayer(QgsPluginLayer):
     self.smoothRender = isSmooth
     self.setCustomProperty("smoothRender", 1 if isSmooth else 0)
 
-  def setCreditVisibility(self, visible):
-    self.creditVisibility = visible
+  def setAttribVisibility(self, visible):
+    self.attribVisibility = visible
     self.setCustomProperty("creditVisibility", 1 if visible else 0)
 
   def draw(self, renderContext):
@@ -287,8 +287,8 @@ class TileLayer(QgsPluginLayer):
       if self.smoothRender:
         painter.setRenderHint(QPainter.SmoothPixmapTransform, oldSmoothRenderHint)
 
-      # draw credit on the bottom right corner
-      if self.creditVisibility and self.layerDef.credit:
+      # draw attribution on the bottom right corner
+      if self.attribVisibility and self.layerDef.attribution:
         margin, paddingH, paddingV = (3, 4, 3)
         # scale
         scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
@@ -298,10 +298,10 @@ class TileLayer(QgsPluginLayer):
         visibleSWidth = painter.viewport().width() * scaleX / scale
         visibleSHeight = painter.viewport().height() * scaleY / scale
         rect = QRect(0, 0, visibleSWidth - margin, visibleSHeight - margin)
-        textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
+        textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.attribution)
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
-        painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.credit)
+        painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.attribution)
 
     if 0: #debug_mode:
       # draw plugin icon
@@ -485,9 +485,9 @@ class TileLayer(QgsPluginLayer):
   def readXml(self, node):
     self.readCustomProperties(node)
     self.layerDef.title = self.customProperty("title", "")
-    self.layerDef.credit = self.customProperty("credit", "")
-    if self.layerDef.credit == "":
-      self.layerDef.credit = self.customProperty("providerName", "")    # for compatibility with 0.11
+    self.layerDef.attribution = self.customProperty("credit", "")
+    if self.layerDef.attribution == "":
+      self.layerDef.attribution = self.customProperty("providerName", "")    # for compatibility with 0.11
     self.layerDef.serviceUrl = self.customProperty("serviceUrl", "")
     self.layerDef.yOriginTop = int(self.customProperty("yOriginTop", 1))
     self.layerDef.zmin = int(self.customProperty("zmin", TileDefaultSettings.ZMIN))
@@ -500,7 +500,7 @@ class TileLayer(QgsPluginLayer):
     self.setTransparency(int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY)))
     self.setBlendModeByName(self.customProperty("blendMode", LayerDefaultSettings.BLEND_MODE))
     self.setSmoothRender(int(self.customProperty("smoothRender", LayerDefaultSettings.SMOOTH_RENDER)))
-    self.creditVisibility = int(self.customProperty("creditVisibility", 1))
+    self.attribVisibility = int(self.customProperty("creditVisibility", 1))
     return True
 
   def writeXml(self, node, doc):
@@ -519,7 +519,7 @@ class TileLayer(QgsPluginLayer):
     lines = []
     fmt = u"%s:\t%s"
     lines.append(fmt % (self.tr("Title"), self.layerDef.title))
-    lines.append(fmt % (self.tr("Credit"), self.layerDef.credit))
+    lines.append(fmt % (self.tr("Attribution"), self.layerDef.attribution))
     lines.append(fmt % (self.tr("URL"), self.layerDef.serviceUrl))
     lines.append(fmt % (self.tr("yOrigin"), u"%s (yOriginTop=%d)" % (("Bottom", "Top")[self.layerDef.yOriginTop], self.layerDef.yOriginTop)))
     if self.layerDef.bbox:
@@ -631,5 +631,5 @@ class TileLayerType(QgsPluginLayerType):
     layer.setTransparency(dialog.ui.spinBox_Transparency.value())
     layer.setBlendModeByName(dialog.ui.comboBox_BlendingMode.currentText())
     layer.setSmoothRender(dialog.ui.checkBox_SmoothRender.isChecked())
-    layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
+    layer.setAttribVisibility(dialog.ui.checkBox_AttribVisibility.isChecked())
     layer.repaintRequested.emit()

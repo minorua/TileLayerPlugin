@@ -65,11 +65,11 @@ def drawDebugInformation(layer, renderContext, zoom, xmin, ymin, xmax, ymax):
   painter.drawLine(QPointF(0, 0), QPointF(painter.viewport().width(), painter.viewport().height()))
   painter.drawLine(QPointF(painter.viewport().width(), 0), QPointF(0, painter.viewport().height()))
 
-  # credit label
+  # attribution label
   margin, paddingH, paddingV = (3, 4, 3)
-  credit = "This is credit"
+  attribution = "This is attribution"
   rect = QRect(0, 0, painter.viewport().width() - margin, painter.viewport().height() - margin)
-  textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, credit)
+  textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, attribution)
   bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
   painter.drawRect(bgRect)
-  painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, credit)
+  painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, attribution)
