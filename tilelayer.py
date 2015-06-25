@@ -40,16 +40,12 @@ from tiles import BoundingBox, Tile, TileDefaultSettings, TileLayerDefinition, T
 
 debug_mode = 1
 
-class LayerDefaultSettings:
-
-  TRANSPARENCY = 0
-  BLEND_MODE = "SourceOver"
-  SMOOTH_RENDER = True
-
 class TileLayer(QgsPluginLayer):
 
   LAYER_TYPE = "TileLayer"
   MAX_TILE_COUNT = 256
+  DEFAULT_BLEND_MODE = "SourceOver"
+  DEFAULT_SMOOTH_RENDER = True
 
   # PyQt signals
   fetchRequestSignal = pyqtSignal(list)
@@ -87,9 +83,9 @@ class TileLayer(QgsPluginLayer):
       self.setExtent(QgsRectangle(-layerDef.TSIZE1, -layerDef.TSIZE1, layerDef.TSIZE1, layerDef.TSIZE1))
     self.setValid(True)
     self.tiles = None
-    self.setTransparency(LayerDefaultSettings.TRANSPARENCY)
-    self.setBlendModeByName(LayerDefaultSettings.BLEND_MODE)
-    self.setSmoothRender(LayerDefaultSettings.SMOOTH_RENDER)
+    self.setTransparency(0)
+    self.setBlendModeByName(self.DEFAULT_BLEND_MODE)
+    self.setSmoothRender(self.DEFAULT_SMOOTH_RENDER)
 
     maxConnections = 2
     cacheExpiry = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
@@ -500,9 +496,9 @@ class TileLayer(QgsPluginLayer):
       self.layerDef.bbox = BoundingBox.fromString(bbox)
       self.setExtent(BoundingBox.degreesToMercatorMeters(self.layerDef.bbox).toQgsRectangle())
     # layer style
-    self.setTransparency(int(self.customProperty("transparency", LayerDefaultSettings.TRANSPARENCY)))
-    self.setBlendModeByName(self.customProperty("blendMode", LayerDefaultSettings.BLEND_MODE))
-    self.setSmoothRender(int(self.customProperty("smoothRender", LayerDefaultSettings.SMOOTH_RENDER)))
+    self.setTransparency(int(self.customProperty("transparency", 0)))
+    self.setBlendModeByName(self.customProperty("blendMode", self.DEFAULT_BLEND_MODE))
+    self.setSmoothRender(int(self.customProperty("smoothRender", self.DEFAULT_SMOOTH_RENDER)))
     self.attribVisibility = int(self.customProperty("creditVisibility", 1))
     return True
 
