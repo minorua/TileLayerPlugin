@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\minorua\.qgis2\python\developing_plugins\TileLayerPlugin\addlayerdialog.ui'
 #
-# Created: Thu Jun 25 09:43:43 2015
+# Created: Fri Jun 26 10:14:35 2015
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,11 +36,11 @@ class Ui_Dialog(object):
         self.treeView.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.treeView.setObjectName(_fromUtf8("treeView"))
         self.verticalLayout.addWidget(self.treeView)
-        self.checkBox_AttribVisibility = QtGui.QCheckBox(Dialog)
-        self.checkBox_AttribVisibility.setEnabled(True)
-        self.checkBox_AttribVisibility.setChecked(True)
-        self.checkBox_AttribVisibility.setObjectName(_fromUtf8("checkBox_AttribVisibility"))
-        self.verticalLayout.addWidget(self.checkBox_AttribVisibility)
+        self.checkBox_CreditVisibility = QtGui.QCheckBox(Dialog)
+        self.checkBox_CreditVisibility.setEnabled(True)
+        self.checkBox_CreditVisibility.setChecked(True)
+        self.checkBox_CreditVisibility.setObjectName(_fromUtf8("checkBox_CreditVisibility"))
+        self.verticalLayout.addWidget(self.checkBox_CreditVisibility)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.pushButton_Settings = QtGui.QPushButton(Dialog)
@@ -63,7 +63,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "Add tile layer", None))
-        self.checkBox_AttribVisibility.setText(_translate("Dialog", "Place the attribution on the bottom right corner", None))
+        self.checkBox_CreditVisibility.setText(_translate("Dialog", "Place the credit on the bottom right corner", None))
         self.pushButton_Settings.setText(_translate("Dialog", "Settings", None))
         self.pushButton_Add.setText(_translate("Dialog", "Add", None))
         self.pushButton_Close.setText(_translate("Dialog", "Close", None))

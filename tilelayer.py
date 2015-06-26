@@ -52,12 +52,12 @@ class TileLayer(QgsPluginLayer):
   statusSignal = pyqtSignal(str, int)
   messageBarSignal = pyqtSignal(str, str, int, int)
 
-  def __init__(self, plugin, layerDef, attribVisibility=1):
+  def __init__(self, plugin, layerDef, creditVisibility=1):
     QgsPluginLayer.__init__(self, TileLayer.LAYER_TYPE, layerDef.title)
     self.plugin = plugin
     self.iface = plugin.iface
     self.layerDef = layerDef
-    self.attribVisibility = 1 if attribVisibility else 0
+    self.creditVisibility = 1 if creditVisibility else 0
     self.tiles = None
 
     # set attribution property
@@ -72,7 +72,7 @@ class TileLayer(QgsPluginLayer):
     self.setCustomProperty("zmax", layerDef.zmax)
     if layerDef.bbox:
       self.setCustomProperty("bbox", layerDef.bbox.toString())
-    self.setCustomProperty("creditVisibility", self.attribVisibility)
+    self.setCustomProperty("creditVisibility", self.creditVisibility)
 
     # set crs
     if plugin.crs3857 is None:
@@ -129,8 +129,8 @@ class TileLayer(QgsPluginLayer):
     self.smoothRender = isSmooth
     self.setCustomProperty("smoothRender", 1 if isSmooth else 0)
 
-  def setAttribVisibility(self, visible):
-    self.attribVisibility = visible
+  def setCreditVisibility(self, visible):
+    self.creditVisibility = visible
     self.setCustomProperty("creditVisibility", 1 if visible else 0)
 
   def draw(self, renderContext):
@@ -307,8 +307,8 @@ class TileLayer(QgsPluginLayer):
       if self.smoothRender:
         painter.setRenderHint(QPainter.SmoothPixmapTransform, oldSmoothRenderHint)
 
-      # draw attribution on the bottom right corner
-      if self.attribVisibility and self.layerDef.attribution:
+      # draw credit on the bottom right corner
+      if self.creditVisibility and self.layerDef.attribution:
         margin, paddingH, paddingV = (3, 4, 3)
         # scale
         scaleX, scaleY = self.getScaleToVisibleExtent(renderContext)
@@ -526,7 +526,7 @@ class TileLayer(QgsPluginLayer):
     self.setTransparency(int(self.customProperty("transparency", 0)))
     self.setBlendModeByName(self.customProperty("blendMode", self.DEFAULT_BLEND_MODE))
     self.setSmoothRender(int(self.customProperty("smoothRender", self.DEFAULT_SMOOTH_RENDER)))
-    self.attribVisibility = int(self.customProperty("creditVisibility", 1))
+    self.creditVisibility = int(self.customProperty("creditVisibility", 1))
 
     # max connections of downloader
     self.downloader.maxConnections = HonestAccess.maxConnections(self.layerDef.serviceUrl)
@@ -660,7 +660,7 @@ class TileLayerType(QgsPluginLayerType):
     layer.setTransparency(dialog.ui.spinBox_Transparency.value())
     layer.setBlendModeByName(dialog.ui.comboBox_BlendingMode.currentText())
     layer.setSmoothRender(dialog.ui.checkBox_SmoothRender.isChecked())
-    layer.setAttribVisibility(dialog.ui.checkBox_AttribVisibility.isChecked())
+    layer.setCreditVisibility(dialog.ui.checkBox_CreditVisibility.isChecked())
     layer.repaintRequested.emit()
 
 

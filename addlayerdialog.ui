@@ -27,12 +27,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox_AttribVisibility">
+      <widget class="QCheckBox" name="checkBox_CreditVisibility">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>Place the attribution on the bottom right corner</string>
+        <string>Place the credit on the bottom right corner</string>
        </property>
        <property name="checked">
         <bool>true</bool>
