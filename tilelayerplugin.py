@@ -32,7 +32,7 @@ debug_mode = 1
 
 class TileLayerPlugin:
 
-    VERSION = "0.50.1"
+    VERSION = "0.60"
 
     def __init__(self, iface):
         self.apiChanged23 = QGis.QGIS_VERSION_INT >= 20300
