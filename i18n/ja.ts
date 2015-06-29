@@ -147,64 +147,59 @@
 <context>
     <name>TileLayer</name>
     <message>
-        <location filename="../tilelayer.py" line="219"/>
+        <location filename="../tilelayer.py" line="233"/>
         <source>Tile count is over limit ({0}, max={1})</source>
         <translation>タイル数が制限を超えています ({0}, 最大={1})</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="276"/>
+        <location filename="../tilelayer.py" line="283"/>
         <source>{0} files downloaded. {1} caches hit.</source>
         <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="544"/>
+        <location filename="../tilelayer.py" line="551"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="546"/>
+        <location filename="../tilelayer.py" line="553"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="547"/>
+        <location filename="../tilelayer.py" line="554"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="551"/>
+        <location filename="../tilelayer.py" line="558"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="552"/>
+        <location filename="../tilelayer.py" line="559"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="553"/>
+        <location filename="../tilelayer.py" line="560"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="187"/>
+        <location filename="../tilelayer.py" line="201"/>
         <source>Current zoom level ({0}) is smaller than zmin ({1}): {2}</source>
         <translation>現在のズームレベル({0})は最小ズームレベル({1})よりも小さいです: {2}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="284"/>
+        <location filename="../tilelayer.py" line="291"/>
         <source>Failed to download all {0} files. - {1}</source>
         <translation>全{0}ファイルのダウンロードに失敗しました. - {1}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="498"/>
+        <location filename="../tilelayer.py" line="505"/>
         <source>{0} of {1} files downloaded.</source>
         <translation>{1}ファイルのうち{0}ファイルをダウンロードしました.</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="230"/>
-        <source>Frame layer is drawn only in EPSG:3857</source>
-        <translation>フレームレイヤは座標参照系がEPSG:3857でなければ描かれません</translation>
     </message>
     <message>
         <location filename="../tilelayer.py" line="105"/>
@@ -212,17 +207,17 @@
         <translation>このサービスへのアクセスは利用規約によって制限されています. 利用規約に従って下さい.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="280"/>
+        <location filename="../tilelayer.py" line="287"/>
         <source>Download Timeout - {0}</source>
         <translation>ダウンロードがタイムアウトしました - {0}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="501"/>
+        <location filename="../tilelayer.py" line="508"/>
         <source> {0} files failed.</source>
         <translation> {0}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="545"/>
+        <location filename="../tilelayer.py" line="552"/>
         <source>Attribution</source>
         <translation>帰属</translation>
     </message>
@@ -232,9 +227,19 @@
         <translation>タイルレイヤプラグイン</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="350"/>
+        <location filename="../tilelayer.py" line="357"/>
         <source>Rotation/Reprojection requires python-gdal</source>
         <translation>回転/投影変換にはpython-gdalが必要です</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="158"/>
+        <source>Frame layer is not drawn if the CRS is not EPSG:3857</source>
+        <translation>フレームレイヤは座標参照系がEPSG:3857でなければ描かれません</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="160"/>
+        <source>Frame layer is not drawn if map is rotated</source>
+        <translation>フレームレイヤは地図が回転されていると描かれません</translation>
     </message>
 </context>
 <context>

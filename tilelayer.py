@@ -149,6 +149,19 @@ class TileLayer(QgsPluginLayer):
 
     mpp = mupp    # meters per pixel
     isWebMercator = self.isProjectCrsWebMercator()
+
+    # frame layer isn't drawn if the CRS is not web mercator or map is rotated
+    if self.layerDef.serviceUrl[0] == ":" and "frame" in self.layerDef.serviceUrl:    # or "number" in self.layerDef.serviceUrl:
+      msg = ""
+      if not isWebMercator:
+        msg = self.tr("Frame layer is not drawn if the CRS is not EPSG:3857")
+      elif rotation:
+        msg = self.tr("Frame layer is not drawn if map is rotated")
+
+      if msg:
+        self.showMessageBar(msg, QgsMessageBar.INFO, 2)
+        return True
+
     if not isWebMercator:
       # get extent in project CRS
       cx, cy = 0.5 * viewport.width(), 0.5 * viewport.height()
@@ -223,13 +236,6 @@ class TileLayer(QgsPluginLayer):
 
       # zoom level has been determined
       break
-
-    # frame isn't drawn not in web mercator
-    if not isWebMercator and self.layerDef.serviceUrl[0] == ":":
-      if "frame" in self.layerDef.serviceUrl:   # or "number" in self.layerDef.serviceUrl:
-        msg = self.tr("Frame layer is drawn only in EPSG:3857")
-        self.showMessageBar(msg, QgsMessageBar.INFO, 2)
-        return True
 
     self.logT("TileLayer.draw: {0} {1} {2} {3} {4}".format(zoom, ulx, uly, lrx, lry))
 
