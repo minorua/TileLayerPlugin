@@ -11,4 +11,4 @@ SOURCES = ../tilelayerplugin.py \
 ../ui_settingsdialog.py \
 ../downloader.py
 
-TRANSLATIONS = tilelayerplugin_ja.ts
+TRANSLATIONS = ja.ts
