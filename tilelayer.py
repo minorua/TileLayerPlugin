@@ -323,12 +323,6 @@ class TileLayer(QgsPluginLayer):
         painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
         painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.attribution)
 
-    if 0: #debug_mode:
-      # draw plugin icon
-      image = QImage(os.path.join(os.path.dirname(QFile.decodeName(__file__)), "icon_old.png"))
-      painter.drawImage(5, 5, image)
-      self.logT("TileLayer.draw() ends")
-
     # restore painter state
     painter.restore()
 
@@ -353,7 +347,7 @@ class TileLayer(QgsPluginLayer):
 
   def drawTilesOnTheFly(self, renderContext, mapExtent, tiles, sdx=1.0, sdy=1.0):
     if not hasGdal:
-      msg = self.tr("Reprojection requires python-gdal")
+      msg = self.tr("Rotation/Reprojection requires python-gdal")
       self.showMessageBar(msg, QgsMessageBar.INFO, 2)
       return
 
@@ -675,7 +669,7 @@ class HonestAccess:
 
   @staticmethod
   def restrictedByTOS(url):
-    # if access to the url is restricted by TOS, return 0
+    # whether access to the url is restricted by TOS
     host = QUrl(url).host()
     if "google.com" in host:        # https://developers.google.com/maps/terms 10.1.1.a No Access to Maps API(s) Except...
       return True

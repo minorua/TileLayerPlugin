@@ -157,32 +157,32 @@
         <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="550"/>
+        <location filename="../tilelayer.py" line="544"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="552"/>
+        <location filename="../tilelayer.py" line="546"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="553"/>
+        <location filename="../tilelayer.py" line="547"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="557"/>
+        <location filename="../tilelayer.py" line="551"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="558"/>
+        <location filename="../tilelayer.py" line="552"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="559"/>
+        <location filename="../tilelayer.py" line="553"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
@@ -197,7 +197,7 @@
         <translation>全{0}ファイルのダウンロードに失敗しました. - {1}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="504"/>
+        <location filename="../tilelayer.py" line="498"/>
         <source>{0} of {1} files downloaded.</source>
         <translation>{1}ファイルのうち{0}ファイルをダウンロードしました.</translation>
     </message>
@@ -205,11 +205,6 @@
         <location filename="../tilelayer.py" line="230"/>
         <source>Frame layer is drawn only in EPSG:3857</source>
         <translation>フレームレイヤは座標参照系がEPSG:3857でなければ描かれません</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="356"/>
-        <source>Reprojection requires python-gdal</source>
-        <translation>投影変換にはpython-gdalが必要です</translation>
     </message>
     <message>
         <location filename="../tilelayer.py" line="105"/>
@@ -222,12 +217,12 @@
         <translation>ダウンロードがタイムアウトしました - {0}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="507"/>
+        <location filename="../tilelayer.py" line="501"/>
         <source> {0} files failed.</source>
         <translation> {0}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="551"/>
+        <location filename="../tilelayer.py" line="545"/>
         <source>Attribution</source>
         <translation>帰属</translation>
     </message>
@@ -236,11 +231,16 @@
         <source>TileLayerPlugin</source>
         <translation>タイルレイヤプラグイン</translation>
     </message>
+    <message>
+        <location filename="../tilelayer.py" line="350"/>
+        <source>Rotation/Reprojection requires python-gdal</source>
+        <translation>回転/投影変換にはpython-gdalが必要です</translation>
+    </message>
 </context>
 <context>
     <name>TileLayerPlugin</name>
     <message>
-        <location filename="../tilelayerplugin.py" line="67"/>
+        <location filename="../tilelayerplugin.py" line="73"/>
         <source>Add Tile Layer...</source>
         <translation>タイルレイヤを追加する...</translation>
     </message>
@@ -250,7 +250,7 @@
         <translation>タイルレイヤプラグイン</translation>
     </message>
     <message>
-        <location filename="../tilelayerplugin.py" line="185"/>
+        <location filename="../tilelayerplugin.py" line="189"/>
         <source>Project CRS has been changed to EPSG:3857.</source>
         <translation>プロジェクトのCRSはEPSG:3857に変更されました.</translation>
     </message>
