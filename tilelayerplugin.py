@@ -59,10 +59,16 @@ class TileLayerPlugin:
         self.navigationMessagesEnabled = int(settings.value("/TileLayerPlugin/naviMsg", Qt.Checked, type=int))
         self.crs3857 = None
         self.layers = {}
+
+        # register plugin layer type
+        self.tileLayerType = TileLayerType(self)
+        QgsPluginLayerRegistry.instance().addPluginLayerType(self.tileLayerType)
+
+        # connect signal-slot
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.layerRemoved)
 
     def initGui(self):
-        # Create action
+        # create action
         icon = QIcon(os.path.join(self.plugin_dir, "icon.png"))
         self.action = QAction(icon, self.tr("Add Tile Layer..."), self.iface.mainWindow())
         self.action.setObjectName("TileLayerPlugin_AddLayer")
@@ -70,27 +76,25 @@ class TileLayerPlugin:
         # connect the action to the method
         self.action.triggered.connect(self.run)
 
-        # Add toolbar button and menu item
+        # add toolbar button and menu item
         if QSettings().value("/TileLayerPlugin/moveToLayer", 0, type=int):
           self.iface.insertAddLayerAction(self.action)
           self.iface.layerToolBar().addAction(self.action)
         else:
           self.iface.addPluginToWebMenu(self.pluginName, self.action)
 
-        # Register plugin layer type
-        self.tileLayerType = TileLayerType(self)
-        QgsPluginLayerRegistry.instance().addPluginLayerType(self.tileLayerType)
-
     def unload(self):
-        # Remove the plugin menu item and icon
+        # remove the plugin menu item and icon
         if QSettings().value("/TileLayerPlugin/moveToLayer", 0, type=int):
           self.iface.layerToolBar().removeAction(self.action)
           self.iface.removeAddLayerAction(self.action)
         else:
           self.iface.removePluginWebMenu(self.pluginName, self.action)
 
-        # Unregister plugin layer type
+        # unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(TileLayer.LAYER_TYPE)
+
+        # disconnect signal-slot
         QgsMapLayerRegistry.instance().layerRemoved.disconnect(self.layerRemoved)
 
     def layerRemoved(self, layerId):
