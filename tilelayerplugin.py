@@ -44,7 +44,7 @@ class TileLayerPlugin:
         self.plugin_dir = os.path.dirname(QFile.decodeName(__file__))
         # initialize locale
         settings = QSettings()
-        locale = settings.value("locale/userLocale", [])[0:2]
+        locale = settings.value("locale/userLocale", "")[0:2]
         localePath = os.path.join(self.plugin_dir, 'i18n', '{0}.qm'.format(locale))
 
         if os.path.exists(localePath):
