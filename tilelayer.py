@@ -148,7 +148,11 @@ class TileLayer(QgsPluginLayer):
     viewport = painter.viewport()
 
     mpp = mupp    # meters per pixel
-    isWebMercator = self.isProjectCrsWebMercator()
+
+    isWebMercator = True
+    transform = renderContext.coordinateTransform()
+    if transform:
+      isWebMercator = transform.destCRS().postgisSrid() == 3857
 
     # frame layer isn't drawn if the CRS is not web mercator or map is rotated
     if self.layerDef.serviceUrl[0] == ":" and "frame" in self.layerDef.serviceUrl:    # or "number" in self.layerDef.serviceUrl:
@@ -168,9 +172,8 @@ class TileLayer(QgsPluginLayer):
       center = map2pixel.toMapCoordinatesF(cx, cy)
       mapExtent = RotatedRect(center, mupp * viewport.width(), mupp * viewport.height(), rotation)
 
-      transform = renderContext.coordinateTransform()
       if transform:
-        transform = QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs())    # project CRS to layer CRS (EPSG:3857)
+        transform = QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs())
         geometry = QgsGeometry.fromPolyline([map2pixel.toMapCoordinatesF(cx - 0.5, cy), map2pixel.toMapCoordinatesF(cx + 0.5, cy)])
         geometry.transform(transform)
         mpp = geometry.length()
@@ -493,10 +496,6 @@ class TileLayer(QgsPluginLayer):
       return QRect(QPoint(round(topLeft.x() * sdx), round(topLeft.y() * sdy)), QPoint(round(bottomRight.x() * sdx), round(bottomRight.y() * sdy)))
     else:
       return QRectF(QPointF(topLeft.x() * sdx, topLeft.y() * sdy), QPointF(bottomRight.x() * sdx, bottomRight.y() * sdy))
-
-  def isProjectCrsWebMercator(self):
-    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
-    return mapSettings.destinationCrs().postgisSrid() == 3857
 
   def networkReplyFinished(self, url):
     # show progress
