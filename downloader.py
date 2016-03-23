@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QDateTime, QEventLoop, QObject, QTimer, QUrl, qDebug, pyqtSignal
+from PyQt4.QtCore import QDateTime, QEventLoop, QObject, QTimer, QUrl, qDebug, pyqtSignal, pyqtSlot
 from PyQt4.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.core import QgsNetworkAccessManager
 import threading
@@ -122,6 +122,7 @@ class Downloader(QObject):
     self.abort()
     self.errorStatus = Downloader.TIMEOUT_ERROR
 
+  @pyqtSlot()
   def abort(self):
     # clear queue and abort sent requests
     self.queue = []
@@ -154,6 +155,7 @@ class Downloader(QObject):
     self.log("fetchFiles() End: %d" % self.errorStatus)
     return files
 
+  @pyqtSlot(list, int)
   def fetchFilesAsync(self, urlList, timeoutSec=0):
     self.log("fetchFilesAsync()")
     self._fetch(False, urlList, timeoutSec)

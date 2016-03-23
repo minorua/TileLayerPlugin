@@ -23,9 +23,9 @@ import math
 import os
 import threading
 
-from PyQt4.QtCore import Qt, QEventLoop, QFile, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug
+from PyQt4.QtCore import Qt, Q_ARG, QEventLoop, QFile, QMetaObject, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug
 from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter, QMessageBox
-from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsGeometry, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
+from qgis.core import QGis, QgsApplication, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsGeometry, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 try:
@@ -48,7 +48,6 @@ class TileLayer(QgsPluginLayer):
   DEFAULT_SMOOTH_RENDER = True
 
   # PyQt signals
-  fetchRequestSignal = pyqtSignal(list)
   statusSignal = pyqtSignal(str, int)
   messageBarSignal = pyqtSignal(str, str, int, int)
 
@@ -93,12 +92,10 @@ class TileLayer(QgsPluginLayer):
     self.setSmoothRender(self.DEFAULT_SMOOTH_RENDER)
 
     # downloader
-    maxConnections = HonestAccess.maxConnections(layerDef.serviceUrl)
-    cacheExpiry = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
-    userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION)   # will be overwritten in QgsNetworkAccessManager::createRequest() since 2.2
-    self.downloader = Downloader(self, maxConnections, cacheExpiry, userAgent)
-    if self.iface:
-      self.downloader.replyFinished.connect(self.networkReplyFinished)    # download progress
+    self.maxConnections = HonestAccess.maxConnections(layerDef.serviceUrl)
+    self.cacheExpiry = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
+    self.userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION)   # will be overwritten in QgsNetworkAccessManager::createRequest() since 2.2
+    self.downloader = Downloader(self, self.maxConnections, self.cacheExpiry, self.userAgent)
 
     # TOS violation warning
     if HonestAccess.restrictedByTOS(layerDef.serviceUrl):
@@ -108,7 +105,6 @@ class TileLayer(QgsPluginLayer):
 
     # multi-thread rendering
     self.eventLoop = None
-    self.fetchRequestSignal.connect(self.fetchRequestSlot)
     if self.iface:
       self.statusSignal.connect(self.showStatusMessageSlot)
       self.messageBarSignal.connect(self.showMessageBarSlot)
@@ -528,7 +524,7 @@ class TileLayer(QgsPluginLayer):
     self.creditVisibility = int(self.customProperty("creditVisibility", 1))
 
     # max connections of downloader
-    self.downloader.maxConnections = HonestAccess.maxConnections(self.layerDef.serviceUrl)
+    self.maxConnections = HonestAccess.maxConnections(self.layerDef.serviceUrl)
     return True
 
   def writeXml(self, node, doc):
@@ -563,17 +559,25 @@ class TileLayer(QgsPluginLayer):
     if not self.plugin.apiChanged23:
       return self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
 
+    downloader = Downloader(None, self.maxConnections, self.cacheExpiry, self.userAgent)
+    downloader.moveToThread(QgsApplication.instance().thread())
+    downloader.timer.moveToThread(QgsApplication.instance().thread())
+
     self.logT("TileLayer.fetchFiles() starts")
     # create a QEventLoop object that belongs to the current worker thread
     eventLoop = QEventLoop()
-    self.downloader.allRepliesFinished.connect(eventLoop.quit)
+    downloader.allRepliesFinished.connect(eventLoop.quit)
+    if self.iface:
+      # for download progress
+      downloader.replyFinished.connect(self.networkReplyFinished)
+      self.downloader = downloader
 
     # create a timer to watch whether rendering is stopped
     watchTimer = QTimer()
     watchTimer.timeout.connect(eventLoop.quit)
 
-    # send a fetch request to the main thread
-    self.fetchRequestSignal.emit(urls)
+    # fetch files
+    QMetaObject.invokeMethod(self.downloader, "fetchFilesAsync", Qt.QueuedConnection, Q_ARG(list, urls), Q_ARG(int, self.plugin.downloadTimeout))
 
     # wait for the fetch to finish
     tick = 0
@@ -583,28 +587,24 @@ class TileLayer(QgsPluginLayer):
     while tick < timeoutTick:
       # run event loop for 0.5 seconds at maximum
       eventLoop.exec_()
-      if self.downloader.unfinishedCount() == 0 or self.renderContext.renderingStopped():
+      if downloader.unfinishedCount() == 0 or self.renderContext.renderingStopped():
         break
       tick += 1
     watchTimer.stop()
 
-    if tick == timeoutTick and self.downloader.unfinishedCount() > 0:
+    if tick == timeoutTick and downloader.unfinishedCount() > 0:
       self.log("fetchFiles timeout")
-      self.downloader.abort()
-      self.downloader.errorStatus = Downloader.TIMEOUT_ERROR
-    files = self.downloader.fetchedFiles
+      QMetaObject.invokeMethod(downloader, "abort", Qt.QueuedConnection)
+      downloader.errorStatus = Downloader.TIMEOUT_ERROR
 
-    watchTimer.timeout.disconnect(eventLoop.quit)   #
-    self.downloader.allRepliesFinished.disconnect(eventLoop.quit)
+    # watchTimer.timeout.disconnect(eventLoop.quit)
+    # downloader.allRepliesFinished.disconnect(eventLoop.quit)
 
     self.logT("TileLayer.fetchFiles() ends")
-    return files
-
-  def fetchRequestSlot(self, urls):
-    self.downloader.fetchFilesAsync(urls, self.plugin.downloadTimeout)
+    return downloader.fetchedFiles
 
   def showStatusMessage(self, msg, timeout=0):
-    self.statusSignal.emit(msg, timeout)
+    self.statusSignal.emit(msg, timeout)    #TODO: use QMetaObject.invokeMethod
 
   def showStatusMessageSlot(self, msg, timeout):
     self.iface.mainWindow().statusBar().showMessage(msg, timeout)
