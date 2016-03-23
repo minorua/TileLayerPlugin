@@ -280,7 +280,7 @@ class TileLayer(QgsPluginLayer):
           if self.downloader.errorStatus != Downloader.NO_ERROR:
             if self.downloader.errorStatus == Downloader.TIMEOUT_ERROR:
               barmsg = self.tr("Download Timeout - {0}").format(self.name())
-            else:
+            elif stats["errors"] > 0:
               msg += self.tr(" {0} files failed.").format(stats["errors"])
               if stats["successed"] + allCacheHits == 0:
                 barmsg = self.tr("Failed to download all {0} files. - {1}").format(stats["errors"], self.name())
@@ -583,10 +583,14 @@ class TileLayer(QgsPluginLayer):
       tick += 1
     watchTimer.stop()
 
-    if tick == timeoutTick and downloader.unfinishedCount() > 0:
-      self.log("fetchFiles timeout")
-      QMetaObject.invokeMethod(downloader, "abort", Qt.QueuedConnection)
-      downloader.errorStatus = Downloader.TIMEOUT_ERROR
+    if downloader.unfinishedCount() > 0:
+      downloader.abort(False)
+      if self.renderContext.renderingStopped():
+        self.log("fetchFiles(): renderingStopped")
+
+      elif tick == timeoutTick:
+        downloader.errorStatus = Downloader.TIMEOUT_ERROR
+        self.log("fetchFiles(): timeout")
 
     # watchTimer.timeout.disconnect(eventLoop.quit)
     # downloader.allRepliesFinished.disconnect(eventLoop.quit)

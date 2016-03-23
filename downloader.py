@@ -124,14 +124,21 @@ class Downloader(QObject):
     self.errorStatus = Downloader.TIMEOUT_ERROR
 
   @pyqtSlot()
-  def abort(self):
-    # clear queue and abort sent requests
+  def abort(self, stopTimer=True):
+    # clear queue and abort requests
     self.queue = []
-    self.timer.stop()
 
     for reply in self.requestingReplies.itervalues():
+      url = reply.url().toString()
       reply.abort()
+      reply.deleteLater()
+      self.log("request aborted: {0}".format(url))
+
     self.errorStatus = Downloader.UNKNOWN_ERROR
+    self.requestingReplies = {}
+
+    if stopTimer:
+      self.timer.stop()
 
   def fetchNext(self):
     if len(self.queue) == 0:
