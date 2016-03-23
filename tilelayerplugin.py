@@ -21,23 +21,20 @@
 """
 import os
 
-from PyQt4.QtCore import Qt, QCoreApplication, QFile, QObject, QSettings, QTranslator, qVersion, qDebug
+from PyQt4.QtCore import Qt, QCoreApplication, QFile, QSettings, QTranslator, qVersion, qDebug
 from PyQt4.QtGui import QAction, QIcon
 from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsMapLayerRegistry, QgsPluginLayerRegistry
-from qgis.gui import QgsMessageBar
 
 from tilelayer import TileLayer, TileLayerType
 
 debug_mode = 1
+
 
 class TileLayerPlugin:
 
     VERSION = "0.60"
 
     def __init__(self, iface):
-        self.apiChanged23 = QGis.QGIS_VERSION_INT >= 20300
-        self.apiChanged27 = QGis.QGIS_VERSION_INT >= 20700
-
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
@@ -155,39 +152,6 @@ class TileLayerPlugin:
         else:
           self.iface.addPluginToWebMenu(self.pluginName, self.action)
       return True
-
-    def setCrs(self, crs):
-      if self.apiChanged23:
-        mapCanvas = self.iface.mapCanvas()
-        currentCrs = mapCanvas.mapSettings().destinationCrs()
-        if currentCrs == crs:
-          return
-        # enable "on the fly"
-        mapCanvas.setCrsTransformEnabled(True)
-
-        # set crs
-        mapCanvas.freeze()
-        mapCanvas.setDestinationCrs(crs)
-        if crs.mapUnits() != QGis.UnknownUnit:
-          mapCanvas.setMapUnits(crs.mapUnits())
-        mapCanvas.freeze(False)
-      else:
-        mapCanvas = self.iface.mapCanvas()
-        currentCrs = mapCanvas.mapRenderer().destinationCrs()
-        if currentCrs == crs:
-          return
-        # enable "on the fly"
-        mapCanvas.mapRenderer().setProjectionsEnabled(True)
-
-        # set crs
-        mapCanvas.freeze()
-        mapCanvas.mapRenderer().setDestinationCrs(crs)
-        if crs.mapUnits() != QGis.UnknownUnit:
-          mapCanvas.setMapUnits(crs.mapUnits())
-        mapCanvas.freeze(False)
-
-      msg = self.tr("Project CRS has been changed to EPSG:3857.")
-      self.iface.messageBar().pushMessage(self.pluginName, msg, QgsMessageBar.INFO, 5)
 
     def tr(self, msg):
       return QCoreApplication.translate("TileLayerPlugin", msg)

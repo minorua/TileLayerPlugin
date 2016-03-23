@@ -10,7 +10,7 @@
 
 [general]
 name=TileLayer Plugin
-qgisMinimumVersion=2.0
+qgisMinimumVersion=2.8
 description=TileLayerPlugin is a plugin to add tiled maps on your map canvas.
 about=This plugin can render only tile maps in the tile format of Slippy Map (http://wiki.openstreetmap.org/wiki/Slippy_Map) and similar web tile maps that y-axis of the tile matrix is inverted. Tile size should be 256 x 256.
 version=0.60

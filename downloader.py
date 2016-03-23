@@ -25,6 +25,7 @@ import threading
 
 debug_mode = 0
 
+
 class Downloader(QObject):
 
   # error status
@@ -67,7 +68,7 @@ class Downloader(QObject):
   def _replyFinished(self):
     reply = self.sender()
     url = reply.request().url().toString()
-    if not url in self.fetchedFiles:
+    if url not in self.fetchedFiles:
       self.fetchedFiles[url] = None
 
     if url in self.requestingReplies:

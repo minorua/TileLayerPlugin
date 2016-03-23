@@ -20,10 +20,9 @@
  ***************************************************************************/
 """
 import math
-import os
 import threading
 
-from PyQt4.QtCore import Qt, Q_ARG, QEventLoop, QFile, QMetaObject, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug
+from PyQt4.QtCore import Qt, Q_ARG, QEventLoop, QMetaObject, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug
 from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter, QMessageBox
 from qgis.core import QGis, QgsApplication, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsGeometry, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
 from qgis.gui import QgsMessageBar
@@ -39,6 +38,7 @@ from rotatedrect import RotatedRect
 from tiles import BoundingBox, Tile, TileDefaultSettings, TileLayerDefinition, Tiles
 
 debug_mode = 1
+
 
 class TileLayer(QgsPluginLayer):
 
@@ -104,7 +104,6 @@ class TileLayer(QgsPluginLayer):
                           self.tr("Access to the service is restricted by the TOS. Please follow the TOS."))
 
     # multi-thread rendering
-    self.eventLoop = None
     if self.iface:
       self.statusSignal.connect(self.showStatusMessageSlot)
       self.messageBarSignal.connect(self.showMessageBarSlot)
@@ -138,12 +137,10 @@ class TileLayer(QgsPluginLayer):
 
     map2pixel = renderContext.mapToPixel()
     mupp = map2pixel.mapUnitsPerPixel()
-    rotation = map2pixel.mapRotation() if self.plugin.apiChanged27 else 0
+    rotation = map2pixel.mapRotation()
 
     painter = renderContext.painter()
     viewport = painter.viewport()
-
-    mpp = mupp    # meters per pixel
 
     isWebMercator = True
     transform = renderContext.coordinateTransform()
@@ -172,7 +169,7 @@ class TileLayer(QgsPluginLayer):
         transform = QgsCoordinateTransform(transform.destCRS(), transform.sourceCrs())
         geometry = QgsGeometry.fromPolyline([map2pixel.toMapCoordinatesF(cx - 0.5, cy), map2pixel.toMapCoordinatesF(cx + 0.5, cy)])
         geometry.transform(transform)
-        mpp = geometry.length()
+        mupp = geometry.length()
 
         # get bounding box of the extent in EPSG:3857
         geometry = mapExtent.geometry()
@@ -189,7 +186,7 @@ class TileLayer(QgsPluginLayer):
 
     # calculate zoom level
     tile_mpp1 = self.layerDef.TSIZE1 / self.layerDef.TILE_SIZE
-    zoom = int(math.ceil(math.log(tile_mpp1 / mpp, 2) + 1))
+    zoom = int(math.ceil(math.log(tile_mpp1 / mupp, 2) + 1))
     zoom = max(0, min(zoom, self.layerDef.zmax))
     #zoom = max(self.layerDef.zmin, zoom)
 
@@ -266,7 +263,7 @@ class TileLayer(QgsPluginLayer):
             urls.append(url)
           elif data:      # memory cache exists
             cacheHits += 1
-          #else:    # tile not found
+          # else:    # tile not found
 
       self.tiles = tiles
       if len(urls) > 0:
@@ -300,9 +297,8 @@ class TileLayer(QgsPluginLayer):
 
       # draw tiles
       if isWebMercator and rotation == 0:
-        # no need to reproject tiles
         self.drawTiles(renderContext, self.tiles)
-        #self.drawTilesDirectly(renderContext, self.tiles)
+        # self.drawTilesDirectly(renderContext, self.tiles)
       else:
         # reproject tiles
         self.drawTilesOnTheFly(renderContext, mapExtent, self.tiles)
@@ -325,7 +321,7 @@ class TileLayer(QgsPluginLayer):
         rect = QRect(0, 0, visibleSWidth - margin, visibleSHeight - margin)
         textRect = painter.boundingRect(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.attribution)
         bgRect = QRect(textRect.left() - paddingH, textRect.top() - paddingV, textRect.width() + 2 * paddingH, textRect.height() + 2 * paddingV)
-        painter.fillRect(bgRect, QColor(240, 240, 240, 150))  #197, 234, 243, 150))
+        painter.fillRect(bgRect, QColor(240, 240, 240, 150))
         painter.drawText(rect, Qt.AlignBottom | Qt.AlignRight, self.layerDef.attribution)
 
     # restore painter state
@@ -347,8 +343,7 @@ class TileLayer(QgsPluginLayer):
     # draw the image on the map canvas
     renderContext.painter().drawImage(rect, image)
 
-    self.log("Tiles extent: " + str(extent))
-    self.log("Draw into canvas rect: " + str(rect))
+    self.log("drawTiles: {0} - {1}".format(str(extent), str(rect)))
 
   def drawTilesOnTheFly(self, renderContext, mapExtent, tiles, sdx=1.0, sdy=1.0):
     if not hasGdal:
@@ -432,7 +427,7 @@ class TileLayer(QgsPluginLayer):
     #p.drawRect(rect)   # A slash appears on the top-right tile without Antialiasing render hint.
     pts = [rect.topLeft(), rect.topRight(), rect.bottomRight(), rect.bottomLeft(), rect.topLeft()]
     for i in range(4):
-      p.drawLine(pts[i], pts[i+1])
+      p.drawLine(pts[i], pts[i + 1])
 
   def drawFrames(self, renderContext, zoom, xmin, ymin, xmax, ymax, sdx, sdy):
     for y in range(ymin, ymax + 1):
@@ -444,7 +439,7 @@ class TileLayer(QgsPluginLayer):
     p = renderContext.painter()
     if not self.layerDef.yOriginTop:
       y = (2 ** zoom - 1) - y
-    p.drawText(rect, Qt.AlignCenter, "(%d, %d)\nzoom: %d" % (x, y, zoom));
+    p.drawText(rect, Qt.AlignCenter, "(%d, %d)\nzoom: %d" % (x, y, zoom))
 
   def drawNumbers(self, renderContext, zoom, xmin, ymin, xmax, ymax, sdx, sdy):
     for y in range(ymin, ymax + 1):
@@ -456,7 +451,7 @@ class TileLayer(QgsPluginLayer):
     drawDebugInformation(self, renderContext, zoom, xmin, ymin, xmax, ymax)
 
   def getScaleToVisibleExtent(self, renderContext):
-    mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
+    mapSettings = self.iface.mapCanvas().mapSettings()
     painter = renderContext.painter()
     if painter.device().logicalDpiX() == mapSettings.outputDpi():
       return 1.0, 1.0   # scale should be 1.0 in rendering on map canvas
@@ -466,8 +461,8 @@ class TileLayer(QgsPluginLayer):
     if ct:
       # FIX ME: want to get original visible extent in project CRS or visible view size in pixels
 
-      #extent = ct.transformBoundingBox(extent)
-      #xmax, ymin = extent.xMaximum(), extent.yMinimum()
+      # extent = ct.transformBoundingBox(extent)
+      # xmax, ymin = extent.xMaximum(), extent.yMinimum()
 
       pt1 = ct.transform(extent.xMaximum(), extent.yMaximum())
       pt2 = ct.transform(extent.xMaximum(), extent.yMinimum())
@@ -528,9 +523,9 @@ class TileLayer(QgsPluginLayer):
     return True
 
   def writeXml(self, node, doc):
-    element = node.toElement();
+    element = node.toElement()
     element.setAttribute("type", "plugin")
-    element.setAttribute("name", TileLayer.LAYER_TYPE);
+    element.setAttribute("name", TileLayer.LAYER_TYPE)
     return True
 
   def readSymbology(self, node, errorMessage):
@@ -554,11 +549,7 @@ class TileLayer(QgsPluginLayer):
     lines.append(fmt % (self.tr("Layer Extent"), extent))
     return "\n".join(lines)
 
-  # functions for multi-thread rendering
   def fetchFiles(self, urls):
-    if not self.plugin.apiChanged23:
-      return self.downloader.fetchFiles(urls, self.plugin.downloadTimeout)
-
     downloader = Downloader(None, self.maxConnections, self.cacheExpiry, self.userAgent)
     downloader.moveToThread(QgsApplication.instance().thread())
     downloader.timer.moveToThread(QgsApplication.instance().thread())
@@ -629,9 +620,19 @@ class TileLayer(QgsPluginLayer):
     pass
 
 #  def createMapRenderer(self, renderContext):
-#    qDebug("createMapRenderer")
-#    self.renderer = QgsPluginLayerRenderer(self, renderContext)
-#    return self.renderer
+#    return TileLayerRenderer(self, renderContext)
+
+
+# class TileLayerRenderer(QgsMapLayerRenderer):
+#
+#  def __init__(self, layer, renderContext):
+#    QgsMapLayerRenderer.__init__(self, layer.id())
+#    self.layer = layer
+#    self.context = renderContext
+#
+#  def render(self):
+#    return self.layer.draw(self.context)
+
 
 class TileLayerType(QgsPluginLayerType):
   def __init__(self, plugin):

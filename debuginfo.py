@@ -24,7 +24,7 @@ from qgis.core import QGis, QgsCoordinateTransform, QgsGeometry, QgsPoint, QgsRe
 
 def drawDebugInformation(layer, renderContext, zoom, xmin, ymin, xmax, ymax):
   self = layer
-  mapSettings = self.iface.mapCanvas().mapSettings() if self.plugin.apiChanged23 else self.iface.mapCanvas().mapRenderer()
+  mapSettings = self.iface.mapCanvas().mapSettings()
 
   lines = []
   lines.append("TileLayer")
