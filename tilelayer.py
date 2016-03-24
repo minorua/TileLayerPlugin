@@ -129,7 +129,6 @@ class TileLayer(QgsPluginLayer):
     self.setCustomProperty("creditVisibility", 1 if visible else 0)
 
   def draw(self, renderContext):
-    self.renderContext = renderContext
     extent = renderContext.extent()
     if extent.isEmpty() or extent.width() == float("inf"):
       qDebug("Drawing is skipped because map extent is empty or inf.")
@@ -248,7 +247,7 @@ class TileLayer(QgsPluginLayer):
       painter.setBrush(QBrush(Qt.NoBrush))
       self.drawDebugInfo(renderContext, zoom, ulx, uly, lrx, lry)
     else:
-      # create Tiles class object and throw url into it
+      # create a Tiles object and a list of urls to fetch tile image data
       tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
       urls = []
       cacheHits = 0
@@ -268,9 +267,9 @@ class TileLayer(QgsPluginLayer):
       self.tiles = tiles
       if len(urls) > 0:
         # fetch tile data
-        files = self.fetchFiles(urls)
-        for url in files.keys():
-          self.tiles.setImageData(url, files[url])
+        files = self.fetchFiles(urls, renderContext)
+        for url, data in files.items():
+          tiles.setImageData(url, data)
 
         if self.iface:
           stats = self.downloader.stats()
@@ -295,15 +294,21 @@ class TileLayer(QgsPluginLayer):
       if self.smoothRender:
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
+      # do not start drawing tiles if rendering has been stopped
+      if renderContext.renderingStopped():
+        self.log("draw(): renderingStopped!")
+        painter.restore()
+        return True
+
       # draw tiles
       if isWebMercator and rotation == 0:
-        self.drawTiles(renderContext, self.tiles)
-        # self.drawTilesDirectly(renderContext, self.tiles)
+        self.drawTiles(renderContext, tiles)
+        # self.drawTilesDirectly(renderContext, tiles)
       else:
         # reproject tiles
-        self.drawTilesOnTheFly(renderContext, mapExtent, self.tiles)
+        self.drawTilesOnTheFly(renderContext, mapExtent, tiles)
 
-      # restore layer style
+      # restore old state
       painter.setOpacity(oldOpacity)
       if self.smoothRender:
         painter.setRenderHint(QPainter.SmoothPixmapTransform, oldSmoothRenderHint)
@@ -326,7 +331,6 @@ class TileLayer(QgsPluginLayer):
 
     # restore painter state
     painter.restore()
-
     return True
 
   def drawTiles(self, renderContext, tiles, sdx=1.0, sdy=1.0):
@@ -549,7 +553,7 @@ class TileLayer(QgsPluginLayer):
     lines.append(fmt % (self.tr("Layer Extent"), extent))
     return "\n".join(lines)
 
-  def fetchFiles(self, urls):
+  def fetchFiles(self, urls, renderContext):
     downloader = Downloader(None, self.maxConnections, self.cacheExpiry, self.userAgent)
     downloader.moveToThread(QgsApplication.instance().thread())
     downloader.timer.moveToThread(QgsApplication.instance().thread())
@@ -578,17 +582,14 @@ class TileLayer(QgsPluginLayer):
     while tick < timeoutTick:
       # run event loop for 0.5 seconds at maximum
       eventLoop.exec_()
-      if downloader.unfinishedCount() == 0 or self.renderContext.renderingStopped():
+      if downloader.unfinishedCount() == 0 or renderContext.renderingStopped():
         break
       tick += 1
     watchTimer.stop()
 
     if downloader.unfinishedCount() > 0:
       downloader.abort(False)
-      if self.renderContext.renderingStopped():
-        self.log("fetchFiles(): renderingStopped")
-
-      elif tick == timeoutTick:
+      if tick == timeoutTick:
         downloader.errorStatus = Downloader.TIMEOUT_ERROR
         self.log("fetchFiles(): timeout")
 
