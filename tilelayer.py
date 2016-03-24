@@ -250,13 +250,14 @@ class TileLayer(QgsPluginLayer):
       # create a Tiles object and a list of urls to fetch tile image data
       tiles = Tiles(zoom, ulx, uly, lrx, lry, self.layerDef)
       urls = []
+      cachedTiles = self.tiles
       cacheHits = 0
       for ty in range(uly, lry + 1):
         for tx in range(ulx, lrx + 1):
           data = None
           url = self.layerDef.tileUrl(zoom, tx, ty)
-          if self.tiles and zoom == self.tiles.zoom and url in self.tiles.tiles:
-            data = self.tiles.tiles[url].data
+          if cachedTiles and zoom == cachedTiles.zoom and url in cachedTiles.tiles:
+            data = cachedTiles.tiles[url].data
           tiles.addTile(url, Tile(zoom, tx, ty, data))
           if data is None:
             urls.append(url)
