@@ -79,6 +79,10 @@ else:
 
 ## ChangeLog
 
+version 0.70
+* Fixed Bug #13 - Not rendered with QTiles plugin
+* Fixed Bug #14 - Not correctly drawn when map canvas is panned/zoomed very frequently
+
 version 0.60
 * Map rotation support
 * Added function (API) to add tile layer from Python
