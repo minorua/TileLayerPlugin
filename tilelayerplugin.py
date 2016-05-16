@@ -23,7 +23,7 @@ import os
 
 from PyQt4.QtCore import Qt, QCoreApplication, QFile, QSettings, QTranslator, qVersion, qDebug
 from PyQt4.QtGui import QAction, QIcon
-from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsMapLayerRegistry, QgsPluginLayerRegistry
+from qgis.core import QGis, QgsCoordinateReferenceSystem, QgsMapLayerRegistry, QgsPluginLayerRegistry, QgsMapLayer
 
 from tilelayer import TileLayer, TileLayerType
 
@@ -64,6 +64,14 @@ class TileLayerPlugin:
         # connect signal-slot
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.layerRemoved)
 
+        # Action for saving tiles
+        self.saveTilesAction = QAction(self.tr('Save tiles'), self.iface.legendInterface() )
+        self.iface.legendInterface().addLegendLayerAction(self.saveTilesAction,
+                                                          "",
+                                                          u"savetiles",
+                                                          QgsMapLayer.PluginLayer,
+                                                          False)
+
     def initGui(self):
         # create action
         icon = QIcon(os.path.join(self.plugin_dir, "icon.png"))
@@ -93,6 +101,7 @@ class TileLayerPlugin:
 
         # disconnect signal-slot
         QgsMapLayerRegistry.instance().layerRemoved.disconnect(self.layerRemoved)
+        self.iface.legendInterface().removeLegendLayerAction(self.saveTilesAction)
 
     def layerRemoved(self, layerId):
       if layerId in self.layers:
@@ -116,6 +125,9 @@ class TileLayerPlugin:
 
       QgsMapLayerRegistry.instance().addMapLayer(layer)
       self.layers[layer.id()] = layer
+
+      self.iface.legendInterface().addLegendLayerActionForLayer(self.saveTilesAction, layer)
+      self.saveTilesAction.triggered.connect(layer.saveTiles)
       return layer
 
     def run(self):
