@@ -22,10 +22,11 @@
 import math
 import threading
 
-from PyQt4.QtCore import Qt, Q_ARG, QEventLoop, QMetaObject, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug
-from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter, QMessageBox
+from PyQt4.QtCore import Qt, Q_ARG, QEventLoop, QMetaObject, QObject, QPoint, QPointF, QRect, QRectF, QSettings, QUrl, QTimer, pyqtSignal, qDebug, QBuffer, QIODevice
+from PyQt4.QtGui import QBrush, QColor, QFont, QImage, QPainter, QMessageBox, QImageReader, QFileDialog
 from qgis.core import QGis, QgsApplication, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsGeometry, QgsPluginLayer, QgsPluginLayerType, QgsRectangle
 from qgis.gui import QgsMessageBar
+from os.path import join
 
 try:
   from osgeo import gdal
@@ -624,6 +625,56 @@ class TileLayer(QgsPluginLayer):
 
   def dump(self, detail=False, bbox=None):
     pass
+
+  def saveTiles(self):
+    # Let the user choose the directory to save to
+    directory = QFileDialog.getExistingDirectory()
+    if not directory:
+      # User cancelled the directory selection
+      return
+
+    # Build the content of the .aux.xml file containing the projection info
+    projection_string = (self.crs().toWkt())
+    pam_string = '<PAMDataset>\n' + \
+                 '<SRS>{}</SRS>\n'.format(projection_string) + \
+                 '</PAMDataset>'
+
+    for tile in self.tiles.tiles.values():
+      # Figure out the file format extension
+      reader = QImageReader()
+      buffer = QBuffer()
+      buffer.setData(tile.data)
+      buffer.open(QIODevice.ReadOnly)
+      extension = str(reader.imageFormat(buffer))
+
+      # Build the file name of the image file
+      image_file_name = "{}-{}-{}.{}".format(tile.x, tile.y, tile.zoom, extension)
+      image_file_path = join(directory, image_file_name)
+
+      # Save the image file
+      with open(image_file_path, 'wb') as image_file:
+        image_file.write(tile.data)
+
+      # Save the .aux.xml
+      with open(image_file_path + '.aux.xml', 'w') as aux_file:
+        aux_file.write(pam_string)
+
+      # Save the world file containing the georeferencing information
+      tile_rect = self.tiles.serviceInfo.getTileRect(tile.zoom, tile.x, tile.y)
+      tile_size = self.tiles.TILE_SIZE
+      with open(image_file_path + 'w', 'w') as world_file:
+        world_file.writelines([
+          str(tile_rect.width() / tile_size) + '\n',
+          '0\n',
+          '0\n',
+          str(-tile_rect.height() / tile_size) + '\n',
+          str(tile_rect.xMinimum()) + '\n',
+          str(tile_rect.yMaximum()) + '\n'
+        ])
+
+    # Done
+    msg = "Tiles have been saved"
+    self.showMessageBar(msg, QgsMessageBar.INFO, 2)
 
 #  def createMapRenderer(self, renderContext):
 #    return TileLayerRenderer(self, renderContext)
