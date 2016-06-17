@@ -64,14 +64,6 @@ class TileLayerPlugin:
         # connect signal-slot
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.layerRemoved)
 
-        # Action for saving tiles
-        self.saveTilesAction = QAction(self.tr('Save tiles'), self.iface.legendInterface() )
-        self.iface.legendInterface().addLegendLayerAction(self.saveTilesAction,
-                                                          "",
-                                                          u"savetiles",
-                                                          QgsMapLayer.PluginLayer,
-                                                          False)
-
     def initGui(self):
         # create action
         icon = QIcon(os.path.join(self.plugin_dir, "icon.png"))
@@ -101,10 +93,10 @@ class TileLayerPlugin:
 
         # disconnect signal-slot
         QgsMapLayerRegistry.instance().layerRemoved.disconnect(self.layerRemoved)
-        self.iface.legendInterface().removeLegendLayerAction(self.saveTilesAction)
 
     def layerRemoved(self, layerId):
       if layerId in self.layers:
+        self.iface.legendInterface().removeLegendLayerAction(self.layers[layerId].saveTilesAction)
         del self.layers[layerId]
         if debug_mode:
           qDebug("Layer %s removed" % layerId.encode("UTF-8"))
@@ -126,8 +118,17 @@ class TileLayerPlugin:
       QgsMapLayerRegistry.instance().addMapLayer(layer)
       self.layers[layer.id()] = layer
 
-      self.iface.legendInterface().addLegendLayerActionForLayer(self.saveTilesAction, layer)
-      self.saveTilesAction.triggered.connect(layer.saveTiles)
+      # Action for saving tiles
+      layer.saveTilesAction = QAction(self.tr('Save tiles'),
+                                     self.iface.legendInterface())
+      self.iface.legendInterface().addLegendLayerAction(layer.saveTilesAction,
+                                                        "",
+                                                        u"savetiles",
+                                                        QgsMapLayer.PluginLayer,
+                                                        False)
+
+      self.iface.legendInterface().addLegendLayerActionForLayer(layer.saveTilesAction, layer)
+      layer.saveTilesAction.triggered.connect(layer.saveTiles)
       return layer
 
     def run(self):
