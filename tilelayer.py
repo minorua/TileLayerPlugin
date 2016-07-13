@@ -628,7 +628,7 @@ class TileLayer(QgsPluginLayer):
 
   def saveTiles(self):
     # Let the user choose the directory to save to
-    directory = QFileDialog.getExistingDirectory(caption='{}: Choose directory'.format(self.layerDef.title))
+    directory = QFileDialog.getExistingDirectory(caption=u'{}: Choose directory'.format(self.layerDef.title))
     if not directory:
       # User cancelled the directory selection
       return
