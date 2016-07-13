@@ -117,7 +117,10 @@ class TileLayerPlugin:
 
       QgsMapLayerRegistry.instance().addMapLayer(layer)
       self.layers[layer.id()] = layer
+      self.addActionToLayer(layer)
+      return layer
 
+    def addActionToLayer(self, layer):
       # Action for saving tiles
       layer.saveTilesAction = QAction(self.tr('Save tiles'),
                                      self.iface.legendInterface())
@@ -129,7 +132,6 @@ class TileLayerPlugin:
 
       self.iface.legendInterface().addLegendLayerActionForLayer(layer.saveTilesAction, layer)
       layer.saveTilesAction.triggered.connect(layer.saveTiles)
-      return layer
 
     def run(self):
       from addlayerdialog import AddLayerDialog

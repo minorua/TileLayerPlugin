@@ -692,12 +692,15 @@ class TileLayer(QgsPluginLayer):
 
 
 class TileLayerType(QgsPluginLayerType):
+
   def __init__(self, plugin):
     QgsPluginLayerType.__init__(self, TileLayer.LAYER_TYPE)
     self.plugin = plugin
 
   def createLayer(self):
-    return TileLayer(self.plugin, TileLayerDefinition.createEmptyInfo())
+    layer = TileLayer(self.plugin, TileLayerDefinition.createEmptyInfo())
+    self.plugin.addActionToLayer(layer)
+    return layer
 
   def showLayerProperties(self, layer):
     from propertiesdialog import PropertiesDialog
