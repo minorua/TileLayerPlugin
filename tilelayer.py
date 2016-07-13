@@ -101,7 +101,7 @@ class TileLayer(QgsPluginLayer):
     # TOS violation warning
     if HonestAccess.restrictedByTOS(layerDef.serviceUrl):
       QMessageBox.warning(None,
-                          u"{0} - {1}".format(self.tr("TileLayerPlugin"), layerDef.title),
+                          u"{0} - {1}".format(self.plugin.pluginName, layerDef.title),
                           self.tr("Access to the service is restricted by the TOS. Please follow the TOS."))
 
     # multi-thread rendering
@@ -628,11 +628,11 @@ class TileLayer(QgsPluginLayer):
 
   def saveTiles(self):
     if self.tiles is None:
-      QMessageBox.warning(None, u"TileLayerPlugin", u"No tiles have been displayed or downloaded.")
+      QMessageBox.warning(None, self.plugin.pluginName, self.tr("No tiles have been downloaded."))
       return
 
     # Let the user choose the directory to save to
-    directory = QFileDialog.getExistingDirectory(caption=u'{}: Choose directory'.format(self.layerDef.title))
+    directory = QFileDialog.getExistingDirectory(caption=self.tr("{}: Choose directory").format(self.layerDef.title))
     if not directory:
       # User cancelled the directory selection
       return
@@ -677,7 +677,7 @@ class TileLayer(QgsPluginLayer):
         ])
 
     # Done
-    msg = "Tiles have been saved"
+    msg = self.tr("Tiles have been saved.")
     self.showMessageBar(msg, QgsMessageBar.INFO, 2)
 
 #  def createMapRenderer(self, renderContext):

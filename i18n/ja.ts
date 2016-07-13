@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ja_JP" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.0" language="ja_JP">
 <context>
     <name>AddLayerDialog</name>
     <message>
@@ -147,84 +148,79 @@
 <context>
     <name>TileLayer</name>
     <message>
-        <location filename="../tilelayer.py" line="233"/>
+        <location filename="../tilelayer.py" line="229"/>
         <source>Tile count is over limit ({0}, max={1})</source>
         <translation>タイル数が制限を超えています ({0}, 最大={1})</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="283"/>
+        <location filename="../tilelayer.py" line="280"/>
         <source>{0} files downloaded. {1} caches hit.</source>
         <translation>{0}ファイルダウンロード. {1}キャッシュヒット.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="551"/>
+        <location filename="../tilelayer.py" line="547"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="553"/>
+        <location filename="../tilelayer.py" line="549"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="554"/>
+        <location filename="../tilelayer.py" line="550"/>
         <source>yOrigin</source>
         <translation>yOrigin</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="558"/>
+        <location filename="../tilelayer.py" line="554"/>
         <source>Not set</source>
         <translation>未設定</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="559"/>
+        <location filename="../tilelayer.py" line="555"/>
         <source>Zoom range</source>
         <translation>ズーム範囲</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="560"/>
+        <location filename="../tilelayer.py" line="556"/>
         <source>Layer Extent</source>
         <translation>レイヤ領域</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="201"/>
+        <location filename="../tilelayer.py" line="197"/>
         <source>Current zoom level ({0}) is smaller than zmin ({1}): {2}</source>
         <translation>現在のズームレベル({0})は最小ズームレベル({1})よりも小さいです: {2}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="291"/>
+        <location filename="../tilelayer.py" line="288"/>
         <source>Failed to download all {0} files. - {1}</source>
         <translation>全{0}ファイルのダウンロードに失敗しました. - {1}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="505"/>
+        <location filename="../tilelayer.py" line="501"/>
         <source>{0} of {1} files downloaded.</source>
         <translation>{1}ファイルのうち{0}ファイルをダウンロードしました.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="105"/>
+        <location filename="../tilelayer.py" line="103"/>
         <source>Access to the service is restricted by the TOS. Please follow the TOS.</source>
         <translation>このサービスへのアクセスは利用規約によって制限されています. 利用規約に従って下さい.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="287"/>
+        <location filename="../tilelayer.py" line="284"/>
         <source>Download Timeout - {0}</source>
         <translation>ダウンロードがタイムアウトしました - {0}</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="508"/>
+        <location filename="../tilelayer.py" line="504"/>
         <source> {0} files failed.</source>
         <translation> {0}ファイル失敗.</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="552"/>
+        <location filename="../tilelayer.py" line="548"/>
         <source>Attribution</source>
         <translation>帰属</translation>
-    </message>
-    <message>
-        <location filename="../tilelayer.py" line="105"/>
-        <source>TileLayerPlugin</source>
-        <translation>タイルレイヤプラグイン</translation>
     </message>
     <message>
         <location filename="../tilelayer.py" line="357"/>
@@ -232,32 +228,47 @@
         <translation>回転/投影変換にはpython-gdalが必要です</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="158"/>
+        <location filename="../tilelayer.py" line="155"/>
         <source>Frame layer is not drawn if the CRS is not EPSG:3857</source>
         <translation>フレームレイヤは座標参照系がEPSG:3857でなければ描かれません</translation>
     </message>
     <message>
-        <location filename="../tilelayer.py" line="160"/>
+        <location filename="../tilelayer.py" line="157"/>
         <source>Frame layer is not drawn if map is rotated</source>
         <translation>フレームレイヤは地図が回転されていると描かれません</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="632"/>
+        <source>No tiles have been downloaded.</source>
+        <translation>タイルがダウンロードされていません.</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="636"/>
+        <source>{}: Choose directory</source>
+        <translation>{}: ディレクトリの選択</translation>
+    </message>
+    <message>
+        <location filename="../tilelayer.py" line="681"/>
+        <source>Tiles have been saved.</source>
+        <translation>タイルが保存されました.</translation>
     </message>
 </context>
 <context>
     <name>TileLayerPlugin</name>
     <message>
-        <location filename="../tilelayerplugin.py" line="73"/>
+        <location filename="../tilelayerplugin.py" line="70"/>
         <source>Add Tile Layer...</source>
         <translation>タイルレイヤを追加する...</translation>
     </message>
     <message>
-        <location filename="../tilelayerplugin.py" line="57"/>
+        <location filename="../tilelayerplugin.py" line="54"/>
         <source>TileLayerPlugin</source>
         <translation>タイルレイヤプラグイン</translation>
     </message>
     <message>
-        <location filename="../tilelayerplugin.py" line="189"/>
-        <source>Project CRS has been changed to EPSG:3857.</source>
-        <translation>プロジェクトのCRSはEPSG:3857に変更されました.</translation>
+        <location filename="../tilelayerplugin.py" line="125"/>
+        <source>Save tiles</source>
+        <translation>タイルの保存</translation>
     </message>
 </context>
 </TS>
