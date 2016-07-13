@@ -95,7 +95,7 @@ class TileLayer(QgsPluginLayer):
     # downloader
     self.maxConnections = HonestAccess.maxConnections(layerDef.serviceUrl)
     self.cacheExpiry = QSettings().value("/qgis/defaultTileExpiry", 24, type=int)
-    self.userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION, self.plugin.VERSION)   # will be overwritten in QgsNetworkAccessManager::createRequest() since 2.2
+    self.userAgent = "QGIS/{0} TileLayerPlugin/{1}".format(QGis.QGIS_VERSION_INT, self.plugin.VERSION)   # will be overwritten in QgsNetworkAccessManager::createRequest() since 2.2
     self.downloader = Downloader(self, self.maxConnections, self.cacheExpiry, self.userAgent)
 
     # TOS violation warning
