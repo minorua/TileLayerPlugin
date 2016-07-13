@@ -627,6 +627,10 @@ class TileLayer(QgsPluginLayer):
     pass
 
   def saveTiles(self):
+    if self.tiles is None:
+      QMessageBox.warning(None, u"TileLayerPlugin", u"No tiles have been displayed or downloaded.")
+      return
+
     # Let the user choose the directory to save to
     directory = QFileDialog.getExistingDirectory(caption=u'{}: Choose directory'.format(self.layerDef.title))
     if not directory:
