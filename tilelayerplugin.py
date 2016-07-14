@@ -32,7 +32,7 @@ debug_mode = 1
 
 class TileLayerPlugin:
 
-    VERSION = "0.60"
+    VERSION = "0.80"
 
     def __init__(self, iface):
         # Save reference to the QGIS interface

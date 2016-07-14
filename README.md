@@ -9,6 +9,8 @@ TileLayerPlugin is under the Web menu. Only tile frame layers are listed in the 
 
 A few layer styles can be changed in the layer properties dialog. You can set sufficient cache size (in kilobytes) in the Network/Cache Settings of the Options dialog in order to make effective use of cache.
 
+You can save currently visible tile images by clicking the "Save tiles" entry in the context menu. Directory select dialog will open, and each individual tile image will be saved in the selected directory.
+
 
 ### Limitations
 
@@ -79,16 +81,20 @@ else:
 
 ## ChangeLog
 
-version 0.70
+Version 0.80  
+* Added action to save tile images (#16, #18)
+* Fixed Bug #20 - TileLayer plugin does not run with QGIS 2.16.0
+
+Version 0.70  
 * Fixed Bug #13 - Not rendered with QTiles plugin
 * Fixed Bug #14 - Not correctly drawn when map canvas is panned/zoomed very frequently
 
-version 0.60
+Version 0.60  
 * Map rotation support
 * Added function (API) to add tile layer from Python
 * Souce code clean-up
 
-version 0.50.1  
+Version 0.50.1  
 * TileLayerPlugin doesn't support map rotation now. Shows message and does not render tiles if map canvas is rotated.
 
 version 0.50  
